@@ -1,6 +1,6 @@
 'use client';
 
-import { Home, CreditCard, PieChart, Settings, Target } from 'lucide-react';
+import { Home, CreditCard, PieChart, Settings, Target, Plus } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -14,22 +14,18 @@ export function BottomNav() {
             <div className="flex justify-between items-center max-w-md mx-auto">
                 <NavItem href="/" icon={<Home className="w-6 h-6" />} label="Inicio" active={isActive('/')} />
                 <NavItem href="/transactions" icon={<CreditCard className="w-6 h-6" />} label="Transacciones" active={isActive('/transactions')} />
-                <NavItem href="/goals" icon={<Target className="w-6 h-6" />} label="Metas" active={isActive('/goals')} />
-
-                {/* Spacer for FAB */}
-                <div className="w-12" />
-
                 <NavItem href="/budget" icon={<PieChart className="w-6 h-6" />} label="Presupuesto" active={isActive('/budget')} />
+                <NavItem href="/goals" icon={<Target className="w-6 h-6" />} label="Metas" active={isActive('/goals')} />
                 <NavItem href="/settings" icon={<Settings className="w-6 h-6" />} label="Ajustes" active={isActive('/settings')} />
             </div>
 
-            {/* Floating Action Button (FAB) */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2">
+            {/* Floating Action Button (FAB) - Bottom Right */}
+            <div className="fixed bottom-24 right-6 z-50">
                 <Link
                     href="/transactions/new"
-                    className="bg-[var(--secondary)] text-white w-14 h-14 rounded-full shadow-xl flex items-center justify-center hover:scale-105 active:scale-95 transition-transform"
+                    className="bg-[var(--primary)] text-white w-14 h-14 rounded-full shadow-lg shadow-indigo-200 flex items-center justify-center hover:scale-105 active:scale-95 transition-transform"
                 >
-                    <span className="text-3xl font-light mb-1">+</span>
+                    <Plus className="w-8 h-8" />
                 </Link>
             </div>
         </div>

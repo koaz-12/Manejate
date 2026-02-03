@@ -208,21 +208,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
         {/* Recent Transactions */}
         <div>
           <div className="flex justify-between items-center mb-4">
-            <header className="px-6 pt-12 pb-6 bg-white sticky top-0 z-40 shadow-sm flex justify-between items-center">
-              <div>
-                <p className="text-sm text-slate-400 mb-1">Disponible para gastar</p>
-                <BudgetSelector />
-              </div>
-              <div className="w-10 h-10 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
-                {user.user_metadata.avatar_url ? (
-                  <img src={user.user_metadata.avatar_url} className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-slate-400 text-xs font-bold">
-                    {user.email?.[0].toUpperCase()}
-                  </div>
-                )}
-              </div>
-            </header>
+            <h2 className="text-lg font-bold text-slate-800">Recientes</h2>
+            <Link href="/transactions" className="text-sm text-[var(--primary)] font-semibold">Ver todas</Link>
           </div>
 
           {transactions && transactions.length > 0 ? (
