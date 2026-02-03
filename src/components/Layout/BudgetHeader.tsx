@@ -23,10 +23,10 @@ export function BudgetHeader({ budgets, currentBudgetId, displayName }: Props) {
     const currentBudget = budgets.find(b => b.id === currentBudgetId)
 
     return (
-        <header className="px-6 pt-8 pb-4 flex justify-between items-center bg-white sticky top-0 z-40 shadow-sm border-b border-slate-50">
+        <header className="px-6 pt-4 pb-3 flex justify-between items-center bg-white sticky top-0 z-40 shadow-sm border-b border-slate-50">
             <div>
-                <p className="text-slate-500 text-sm">Buenos días,</p>
-                <h1 className="text-2xl font-bold text-slate-800">{displayName}</h1>
+                <p className="text-slate-500 text-xs">Buenos días,</p>
+                <h1 className="text-xl font-bold text-slate-800">{displayName}</h1>
 
                 <div className="relative mt-1">
                     <button
