@@ -79,9 +79,8 @@ export default async function BudgetPage({ searchParams }: { searchParams: Promi
 
     return (
         <div className="min-h-screen bg-slate-50 pb-24">
-            <header className="px-6 pt-12 pb-6 bg-white sticky top-0 z-40 shadow-sm">
-                <h1 className="text-2xl font-bold text-slate-800">Presupuesto Mensual</h1>
-                <p className="text-slate-500 text-sm">Control de límites y gastos</p>
+            <header className="px-5 py-3 bg-white sticky top-0 z-40 shadow-[0_1px_3px_0_rgba(0,0,0,0.05)] border-b border-slate-50">
+                <h1 className="text-lg font-bold text-slate-800 tracking-tight">Presupuesto Mensual</h1>
             </header>
 
             <MonthSelector cutoffDay={cutoffDay} />

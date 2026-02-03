@@ -34,10 +34,10 @@ export default async function GoalsPage() {
 
     return (
         <div className="min-h-screen bg-slate-50 pb-24">
-            <header className="px-6 pt-12 pb-6 bg-white sticky top-0 z-40 shadow-sm flex justify-between items-center">
-                <h1 className="text-2xl font-bold text-slate-800">Metas de Ahorro</h1>
-                <Link href="/goals/new" className="text-[var(--primary)] bg-emerald-50 p-2 rounded-full hover:bg-emerald-100 transition-colors">
-                    <Plus className="w-6 h-6" />
+            <header className="px-5 py-3 bg-white sticky top-0 z-40 shadow-[0_1px_3px_0_rgba(0,0,0,0.05)] flex justify-between items-center border-b border-slate-50">
+                <h1 className="text-lg font-bold text-slate-800 tracking-tight">Metas de Ahorro</h1>
+                <Link href="/goals/new" className="text-[var(--primary)] bg-emerald-50 p-1.5 rounded-full hover:bg-emerald-100 transition-colors">
+                    <Plus className="w-5 h-5" />
                 </Link>
             </header>
 

@@ -56,8 +56,9 @@ export default async function SettingsPage() {
 
     return (
         <div className="min-h-screen bg-slate-50 pb-24">
-            <header className="px-6 pt-12 pb-6 bg-white sticky top-0 z-40 shadow-sm">
-                <h1 className="text-2xl font-bold text-slate-800">Ajustes</h1>
+            <header className="px-5 py-3 bg-white sticky top-0 z-40 shadow-[0_1px_3px_0_rgba(0,0,0,0.05)] border-b border-slate-50">
+                <h1 className="text-lg font-bold text-slate-800 tracking-tight">Ajustes</h1>
+                <p className="text-slate-400 text-xs mt-0.5">Configura tu espacio</p>
             </header>
 
             <main className="px-6 mt-6 space-y-8">
