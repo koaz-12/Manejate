@@ -1,0 +1,131 @@
+import { BottomNav } from '@/components/Layout/BottomNav';
+import { createClient } from '@/lib/supabase/server';
+import { redirect } from 'next/navigation';
+import { Plus } from 'lucide-react';
+
+import Link from 'next/link';
+import { cookies } from 'next/headers';
+import { TransactionActions } from '@/components/Transactions/TransactionActions';
+
+
+export default async function TransactionsPage() {
+    const supabase = await createClient();
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) redirect('/login');
+
+    // Get ALL User's Budgets
+    const { data: memberships } = await supabase
+        .from('budget_members')
+        .select('budgets(*)')
+        .eq('user_id', user.id);
+
+    const budgets = memberships?.map((m: any) => m.budgets) || [];
+
+    if (budgets.length === 0) return <div className='p-6'>No tienes presupuestos.</div>;
+
+    // Determine Current Budget
+    const cookieStore = await cookies();
+    const selectedId = cookieStore.get('selected_budget')?.value;
+
+    let budget = budgets.find((b: any) => b.id === selectedId);
+    if (!budget) {
+        budget = budgets[0];
+    }
+
+    // Fetch Transactions with Profile info
+    const { data: transactions } = await supabase
+        .from('transactions')
+        .select('*, profiles(display_name, email)') // Join with profiles
+        .eq('budget_id', budget.id)
+        .order('date', { ascending: false });
+
+    // Fetch Categories for icons/names
+    const { data: categories } = await supabase
+        .from('categories')
+        .select('id, name, icon')
+        .eq('budget_id', budget.id);
+
+    const categoriesMap = new Map(categories?.map(c => [c.id, c]));
+
+    // Group by Date
+    const groupedTransactions: Record<string, typeof transactions> = {};
+
+    transactions?.forEach(tx => {
+        const date = tx.date; // already YYYY-MM-DD from DB
+        if (!groupedTransactions[date]) {
+            groupedTransactions[date] = [];
+        }
+        groupedTransactions[date].push(tx);
+    });
+
+    // Sort Dates Descending
+    const sortedDates = Object.keys(groupedTransactions).sort((a, b) => b.localeCompare(a));
+
+    const formatDate = (dateStr: string) => {
+        const date = new Date(dateStr);
+        const today = new Date();
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+
+        if (dateStr === today.toISOString().split('T')[0]) return 'Hoy';
+        if (dateStr === yesterday.toISOString().split('T')[0]) return 'Ayer';
+
+        return date.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
+    };
+
+    return (
+        <div className="min-h-screen bg-slate-50 pb-24">
+            <header className="px-6 pt-12 pb-6 bg-white sticky top-0 z-40 shadow-sm flex justify-between items-center">
+                <h1 className="text-2xl font-bold text-slate-800">Transacciones</h1>
+                <Link href="/transactions/new" className="text-[var(--primary)] bg-emerald-50 p-2 rounded-full hover:bg-emerald-100 transition-colors">
+                    <Plus className="w-6 h-6" />
+                </Link>
+            </header>
+
+            <main className="px-6 mt-6 space-y-6">
+                {sortedDates.length > 0 ? (
+                    sortedDates.map(date => (
+                        <div key={date}>
+                            <h3 className="text-sm font-bold text-slate-400 mb-3 capitalize">{formatDate(date)}</h3>
+                            <div className="space-y-3">
+                                {groupedTransactions[date]?.map((tx: any) => (
+                                    <div key={tx.id} className="flex justify-between items-center bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-xl">
+                                                {categoriesMap.get(tx.category_id)?.icon || '💸'}
+                                            </div>
+                                            <div>
+                                                <p className="font-semibold text-slate-800">{categoriesMap.get(tx.category_id)?.name || 'Gasto'}</p>
+                                                <div className="flex items-center gap-2">
+                                                    <p className="text-xs text-slate-400 truncate max-w-[150px]">{tx.description || 'Sin descripción'}</p>
+
+                                                    {/* User Attribution Badge */}
+                                                    <div className="flex items-center gap-1 bg-slate-100 px-1.5 py-0.5 rounded-md">
+                                                        <span className="text-[10px] text-slate-500 font-medium">
+                                                            {tx.profiles?.display_name?.charAt(0).toUpperCase() || tx.profiles?.email?.charAt(0).toUpperCase() || '?'}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <p className="font-bold text-slate-800">-${Number(tx.amount).toFixed(2)}</p>
+                                        <TransactionActions id={tx.id} />
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    ))
+                ) : (
+                    <div className="p-8 text-center text-slate-500 bg-white rounded-2xl border border-slate-100 border-dashed">
+                        <p>No tienes movimientos aún.</p>
+                        <Link href="/transactions/new" className="text-[var(--primary)] font-bold mt-2 block">
+                            Crear el primero
+                        </Link>
+                    </div>
+                )}
+            </main>
+            <BottomNav />
+        </div>
+    );
+}
