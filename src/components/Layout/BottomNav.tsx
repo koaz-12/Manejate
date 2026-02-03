@@ -16,16 +16,16 @@ export function BottomNav() {
                 <NavItem href="/transactions" icon={<CreditCard className="w-6 h-6" />} label="Movimientos" active={isActive('/transactions')} />
 
                 {/* Centered Add Button */}
-                <div className="relative -top-5">
+                <div className="relative -top-8">
                     <Link
                         href="/transactions/new"
-                        className="bg-[var(--primary)] text-white w-14 h-14 rounded-full shadow-lg shadow-indigo-200 flex items-center justify-center hover:scale-105 active:scale-95 transition-transform border-[4px] border-slate-50"
+                        className="bg-[var(--primary)] text-white w-16 h-16 rounded-full shadow-lg shadow-indigo-200 flex items-center justify-center hover:scale-105 active:scale-95 transition-transform border-[4px] border-slate-50"
                     >
                         <Plus className="w-8 h-8" />
                     </Link>
                 </div>
 
-                <NavItem href="/goals" icon={<Target className="w-6 h-6" />} label="Metas" active={isActive('/goals')} />
+                <NavItem href="/budget" icon={<PieChart className="w-6 h-6" />} label="Presupuesto" active={isActive('/budget')} />
                 <NavItem href="/settings" icon={<Settings className="w-6 h-6" />} label="Ajustes" active={isActive('/settings')} />
             </div>
         </div>
