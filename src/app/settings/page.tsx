@@ -6,6 +6,7 @@ import { CategoryList } from '@/components/Settings/CategoryList'
 import { InviteLink } from '@/components/Settings/InviteLink';
 import { MemberList } from '@/components/Settings/MemberList';
 import { PendingInvites } from '@/components/Settings/PendingInvites';
+import { RecurringExpensesList } from '@/components/Settings/RecurringExpensesList';
 
 export default async function SettingsPage() {
     const supabase = await createClient();
@@ -54,6 +55,13 @@ export default async function SettingsPage() {
         .eq('budget_id', budget.id)
         .gte('expires_at', new Date().toISOString()) // Only active ones
 
+    // Fetch Recurring Expenses
+    const { data: recurringExpenses } = await supabase
+        .from('recurring_expenses')
+        .select('*')
+        .eq('budget_id', budget.id)
+        .order('day_of_month', { ascending: true })
+
     return (
         <div className="min-h-screen bg-slate-50 pb-24">
             <header className="px-5 py-3 bg-white sticky top-0 z-40 shadow-[0_1px_3px_0_rgba(0,0,0,0.05)] border-b border-slate-50">
@@ -62,6 +70,14 @@ export default async function SettingsPage() {
             </header>
 
             <main className="px-6 mt-6 space-y-8">
+
+                {/* Recurring Expenses Section */}
+                <RecurringExpensesList
+                    expenses={recurringExpenses || []}
+                    categories={categories || []}
+                    budgetId={budget.id}
+                    currency={budget.currency}
+                />
 
                 {/* General Budget Settings */}
                 <section className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">

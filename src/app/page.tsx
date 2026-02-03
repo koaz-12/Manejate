@@ -104,6 +104,10 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
   // Formatting for display "Title" (e.g. "Feb 15 - Mar 14")
   // Not used in UI yet but good logical step.
 
+  // 1. Check & Generate Recurring Expenses (Lazy Trigger) - BEFORE fetching
+  const { checkAndGenerateRecurring } = await import('@/lib/recurring')
+  await checkAndGenerateRecurring(budget.id)
+
   const { data: transactions } = await supabase
     .from('transactions')
     .select('*, profiles(display_name, email)')
