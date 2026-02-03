@@ -6,10 +6,10 @@ import { JoinButton } from '@/components/Collaboration/JoinButton'
 import { CheckCircle2, ShieldCheck, XCircle } from 'lucide-react'
 
 interface Props {
-    params: { token: string }
+    params: Promise<{ token: string }>
 }
 
-export default async function JoinPage({ params }: { params: { token: string } }) {
+export default async function JoinPage({ params }: Props) {
     const { token } = await Promise.resolve(params)
     const supabase = await createClient()
 

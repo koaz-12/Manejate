@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { ChevronLeft } from 'lucide-react'
 
 interface Props {
-    params: { id: string }
+    params: Promise<{ id: string }>
 }
 
 export default async function EditTransactionPage({ params }: Props) {
@@ -14,7 +14,7 @@ export default async function EditTransactionPage({ params }: Props) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) redirect('/login')
 
-    const transactionId = params.id
+    const { id: transactionId } = await params
 
     // Fetch Transaction
     const { data: transaction } = await supabase

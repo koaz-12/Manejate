@@ -33,7 +33,7 @@ export function ExpensesPieChart({ data }: { data: ChartData[] }) {
                             ))}
                         </Pie>
                         <Tooltip
-                            formatter={(value: number) => [`$${value.toFixed(2)}`, 'Gasto']}
+                            formatter={(value: any) => [`$${Number(value).toFixed(2)}`, 'Gasto']}
                             contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
                         />
                         <Legend
