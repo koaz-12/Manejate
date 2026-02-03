@@ -16,6 +16,10 @@ export const metadata: Metadata = {
   title: "Manejate - Presupuesto Colaborativo",
   description: "Tu app de presupuesto colaborativo offline-first.",
   manifest: "/manifest.json",
+  appleWebApp: {
+    title: "Manejate",
+    statusBarStyle: "default",
+  },
 };
 
 export const viewport = {
