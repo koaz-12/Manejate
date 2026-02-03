@@ -226,22 +226,10 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
           </div>
 
           {transactions && transactions.length > 0 ? (
-            <div className="space-y-4">
-              {transactions.slice(0, 5).map((tx) => (
-                <div key={tx.id} className="flex justify-between items-center bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-xl">
-                      {categoriesMap.get(tx.category_id)?.icon || '💸'}
-                    </div>
-                    <div>
-                      <p className="font-semibold text-slate-800">{categoriesMap.get(tx.category_id)?.name || 'Gasto'}</p>
-                      <p className="text-xs text-slate-400">{new Date(tx.date).toLocaleDateString()}</p>
-                    </div>
-                  </div>
-                  <p className="font-bold text-slate-800">-${Number(tx.amount).toFixed(2)}</p>
-                </div>
-              ))}
-            </div>
+            <RecentTransactions transactions={transactions.slice(0, 5).map((tx: any) => ({
+              ...tx,
+              category: categoriesMap.get(tx.category_id)
+            }))} />
           ) : (
             <p className="text-sm text-slate-400">No hay movimientos recientes.</p>
           )}
