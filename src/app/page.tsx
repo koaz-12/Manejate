@@ -15,12 +15,12 @@ import { BudgetSelector } from '@/components/Layout/BudgetSelector';
 
 import { MonthSelector } from '@/components/Dashboard/MonthSelector';
 
-export default async function Home({ searchParams }: { searchParams: { date?: string } }) {
+export default async function Home({ searchParams }: { searchParams: Promise<{ date?: string }> }) {
+  const params = await searchParams;
   const supabase = await createClient();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const response = await supabase.auth.getUser();
+  const user = response.data?.user;
 
   if (!user) {
     redirect('/login');
@@ -73,7 +73,7 @@ export default async function Home({ searchParams }: { searchParams: { date?: st
   // Real Data Fetching (Transactions)
   // Logic for Cutoff Day & Month Navigation
   const cutoffDay = budget.cutoff_day || 1;
-  const paramDate = searchParams?.date ? new Date(searchParams.date) : new Date();
+  const paramDate = params.date ? new Date(params.date) : new Date();
 
   // We determine the "Start of Period" based on the paramDate
   const referenceDay = paramDate.getDate();
@@ -180,7 +180,7 @@ export default async function Home({ searchParams }: { searchParams: { date?: st
       />
 
       {/* Month Navigation */}
-      <MonthSelector cutoffDay={cutoffDay} />
+      <MonthSelector cutoffDay={cutoffDay} currentDate={params.date ? new Date(params.date) : new Date()} />
 
       {/* Main Content */}
       <main className="px-6 space-y-6 mt-4">

@@ -4,13 +4,18 @@ import { ChevronLeft, ChevronRight, Calendar } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useState, useEffect } from 'react'
 
-export function MonthSelector({ cutoffDay }: { cutoffDay: number }) {
+export function MonthSelector({ cutoffDay, currentDate: initialDate }: { cutoffDay: number, currentDate?: Date }) {
     const router = useRouter()
     const searchParams = useSearchParams()
 
     // Get date from URL or default to today
     const urlDate = searchParams.get('date')
-    const [currentDate, setCurrentDate] = useState(() => urlDate ? new Date(urlDate) : new Date())
+    const [currentDate, setCurrentDate] = useState(() => initialDate || (urlDate ? new Date(urlDate) : new Date()))
+
+    // Sync state if prop changes (optional but good for server navigations)
+    useEffect(() => {
+        if (initialDate) setCurrentDate(initialDate)
+    }, [initialDate])
 
     // Format label: "15 Feb - 14 Mar" or "Marzo 2024" depending on cutoff
     // If cutoff is 1, it's just the month.

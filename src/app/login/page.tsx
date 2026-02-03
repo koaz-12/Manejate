@@ -2,7 +2,7 @@ import { login, signup } from './actions'
 import { Wallet } from 'lucide-react'
 
 interface LoginPageProps {
-    searchParams: { error?: string; message?: string; next?: string }
+    searchParams: Promise<{ error?: string; message?: string; next?: string }>
 }
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
@@ -39,7 +39,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
 
                 <form className="space-y-4">
                     {/* Preserve 'next' param for redirect after auth */}
-                    <input type="hidden" name="next" value={searchParams?.next || '/'} />
+                    <input type="hidden" name="next" value={params?.next || '/'} />
 
                     <div className="space-y-2">
                         <label htmlFor="email" className="text-sm font-medium text-slate-700">Email</label>

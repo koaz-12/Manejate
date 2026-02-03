@@ -6,7 +6,8 @@ import { AlertCircle, CheckCircle2, Users } from 'lucide-react'
 import { cookies } from 'next/headers'
 import { InviteLink } from '@/components/Settings/InviteLink'
 
-export default async function BudgetPage({ searchParams }: { searchParams: { date?: string } }) {
+export default async function BudgetPage({ searchParams }: { searchParams: Promise<{ date?: string }> }) {
+    const params = await Promise.resolve(searchParams)
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) redirect('/login')
@@ -27,7 +28,7 @@ export default async function BudgetPage({ searchParams }: { searchParams: { dat
 
     // 2. Date Logic
     const cutoffDay = budget.cutoff_day || 1
-    const paramDate = searchParams?.date ? new Date(searchParams.date) : new Date()
+    const paramDate = params?.date ? new Date(params.date) : new Date()
     // ... reused logic for start/end period ...
     const referenceDay = paramDate.getDate()
     let startOfPeriod = new Date(paramDate)
