@@ -23,18 +23,16 @@ export function BudgetHeader({ budgets, currentBudgetId, displayName }: Props) {
     const currentBudget = budgets.find(b => b.id === currentBudgetId)
 
     return (
-        <header className="px-6 pt-4 pb-3 flex justify-between items-center bg-white sticky top-0 z-40 shadow-sm border-b border-slate-50">
-            <div>
-                <p className="text-slate-500 text-xs">Buenos días,</p>
-                <h1 className="text-xl font-bold text-slate-800">{displayName}</h1>
+        <header className="px-5 py-2 flex justify-between items-center bg-white sticky top-0 z-40 shadow-[0_1px_3px_0_rgba(0,0,0,0.05)]">
+            <div className="flex items-center gap-2">
+                <h1 className="text-lg font-bold text-slate-800 tracking-tight">{displayName}</h1>
 
-                <div className="relative mt-1">
+                <div className="relative">
                     <button
                         onClick={() => setIsOpen(!isOpen)}
-                        className="flex items-center gap-1 text-xs text-slate-500 hover:text-slate-800 transition-colors bg-slate-50 px-2 py-1 rounded-lg border border-slate-100"
+                        className="flex items-center gap-0.5 text-slate-400 hover:text-slate-600 transition-colors p-1"
                     >
-                        {currentBudget?.name || 'Seleccionar...'}
-                        <ChevronDown className="w-3 h-3" />
+                        <ChevronDown className="w-4 h-4" />
                     </button>
 
                     {isOpen && (
