@@ -5,6 +5,7 @@ import { CreateBudgetForm } from '@/components/Onboarding/CreateBudgetForm';
 import { Bell, User } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
+import Link from 'next/link';
 import { checkRecurringExpenses } from '@/actions/recurring';
 import { RecurringAlert } from '@/components/Dashboard/RecurringAlert';
 import { BudgetHeader } from '@/components/Layout/BudgetHeader';
