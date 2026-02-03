@@ -70,7 +70,7 @@ export function BudgetHeader({ budgets, currentBudgetId, displayName }: Props) {
                 <button className="p-2 text-slate-400 hover:text-[var(--secondary)] transition-colors relative">
                     <Bell className="w-6 h-6" />
                 </button>
-                <Link href="/settings" className="relative z-50 w-10 h-10 bg-slate-200 rounded-full flex items-center justify-center overflow-hidden border-2 border-slate-100 hover:border-slate-300 transition-colors">
+                <Link href="/settings" className="relative z-50 w-10 h-10 bg-slate-200 rounded-full flex items-center justify-center overflow-hidden border-2 border-slate-100 hover:border-slate-300 active:scale-90 active:bg-slate-300 transition-all duration-100">
                     <User className="w-6 h-6 text-slate-400" />
                 </Link>
             </div>
