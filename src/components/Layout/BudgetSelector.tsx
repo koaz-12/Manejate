@@ -31,7 +31,7 @@ export async function BudgetSelector() {
     const selectedId = cookieStore.get('selected_budget')?.value
 
     // Find active object, fallback to first
-    let activeBudget = budgets.find(b => b?.id === selectedId) || budgets[0]
+    let activeBudget = budgets.find((b: any) => b?.id === selectedId) || budgets[0]
 
     // If no generic/first budget found (edge case), return null or create button
     if (!activeBudget) return null
