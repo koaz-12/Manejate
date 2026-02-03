@@ -90,27 +90,33 @@ export default async function TransactionsPage() {
                             <h3 className="text-sm font-bold text-slate-400 mb-3 capitalize">{formatDate(date)}</h3>
                             <div className="space-y-3">
                                 {groupedTransactions[date]?.map((tx: any) => (
-                                    <div key={tx.id} className="flex justify-between items-center bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-xl">
+                                    <div key={tx.id} className="flex justify-between items-center bg-white p-3 rounded-2xl shadow-sm border border-slate-100 gap-3">
+                                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                                            <div className="w-10 h-10 rounded-full bg-slate-50 flex-shrink-0 flex items-center justify-center text-xl">
                                                 {categoriesMap.get(tx.category_id)?.icon || '💸'}
                                             </div>
-                                            <div>
-                                                <p className="font-semibold text-slate-800">{categoriesMap.get(tx.category_id)?.name || 'Gasto'}</p>
-                                                <div className="flex items-center gap-2">
-                                                    <p className="text-xs text-slate-400 truncate max-w-[150px]">{tx.description || 'Sin descripción'}</p>
-
-                                                    {/* User Attribution Badge */}
-                                                    <div className="flex items-center gap-1 bg-slate-100 px-1.5 py-0.5 rounded-md">
-                                                        <span className="text-[10px] text-slate-500 font-medium">
-                                                            {tx.profiles?.display_name?.charAt(0).toUpperCase() || tx.profiles?.email?.charAt(0).toUpperCase() || '?'}
-                                                        </span>
+                                            <div className="min-w-0">
+                                                <p className="font-semibold text-slate-800 text-sm truncate">
+                                                    {categoriesMap.get(tx.category_id)?.name || 'Gasto'}
+                                                </p>
+                                                <div className="flex items-center gap-1.5">
+                                                    <p className="text-xs text-slate-400 truncate">
+                                                        {tx.description || 'Sin descripción'}
+                                                    </p>
+                                                    <div className="flex-shrink-0 bg-slate-100 px-1.5 py-0.5 rounded text-[10px] text-slate-500 font-bold">
+                                                        {tx.profiles?.display_name?.charAt(0).toUpperCase() || '?'}
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
-                                        <p className="font-bold text-slate-800">-${Number(tx.amount).toFixed(2)}</p>
-                                        <TransactionActions id={tx.id} />
+                                        <div className="text-right flex-shrink-0">
+                                            <p className="font-bold text-slate-800 text-sm whitespace-nowrap">
+                                                {budget.currency} {Number(tx.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                                            </p>
+                                        </div>
+                                        <div className="-mr-2">
+                                            <TransactionActions id={tx.id} />
+                                        </div>
                                     </div>
                                 ))}
                             </div>
