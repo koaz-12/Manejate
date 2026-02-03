@@ -18,6 +18,10 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
 };
 
+export const viewport = {
+  themeColor: "#ffffff",
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
