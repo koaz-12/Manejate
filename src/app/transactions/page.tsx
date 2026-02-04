@@ -43,7 +43,7 @@ export default async function TransactionsPage() {
     // Fetch Categories for icons/names
     const { data: categories } = await supabase
         .from('categories')
-        .select('id, name, icon')
+        .select('id, name, icon, parent_id')
         .eq('budget_id', budget.id);
 
     const categoriesMap = new Map(categories?.map(c => [c.id, c]));
