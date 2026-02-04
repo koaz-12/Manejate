@@ -90,31 +90,31 @@ export default async function TransactionsPage() {
                             <h3 className="text-sm font-bold text-slate-400 mb-3 capitalize">{formatDate(date)}</h3>
                             <div className="space-y-3">
                                 {groupedTransactions[date]?.map((tx: any) => (
-                                    <div key={tx.id} className="flex justify-between items-center bg-white p-3 rounded-2xl shadow-sm border border-slate-100 gap-3">
-                                        <div className="flex items-center gap-3 flex-1 min-w-0">
-                                            <div className="w-10 h-10 rounded-full bg-slate-50 flex-shrink-0 flex items-center justify-center text-xl">
-                                                {categoriesMap.get(tx.category_id)?.icon || '💸'}
-                                            </div>
-                                            <div className="min-w-0">
-                                                <p className="font-bold text-slate-900 text-base truncate">
+                                    <div key={tx.id} className="flex items-start bg-white p-3 rounded-2xl shadow-sm border border-slate-100 gap-3">
+                                        <div className="w-10 h-10 rounded-full bg-slate-50 flex-shrink-0 flex items-center justify-center text-xl mt-1">
+                                            {categoriesMap.get(tx.category_id)?.icon || '💸'}
+                                        </div>
+                                        <div className="flex-1 min-w-0 flex flex-col gap-0.5">
+                                            <div className="flex justify-between items-start">
+                                                <p className="font-bold text-slate-900 text-base truncate pr-2">
                                                     {categoriesMap.get(tx.category_id)?.name || 'Gasto'}
                                                 </p>
-                                                <div className="flex items-center gap-1.5">
-                                                    <p className="text-sm text-slate-600 truncate font-medium">
-                                                        {tx.description || 'Sin descripción'}
-                                                    </p>
-                                                    <div className="flex-shrink-0 bg-slate-100 px-2 py-0.5 rounded text-[11px] text-slate-600 font-bold">
-                                                        {tx.profiles?.display_name?.charAt(0).toUpperCase() || '?'}
-                                                    </div>
+                                            </div>
+
+                                            <div className="flex items-center gap-1.5">
+                                                <p className="text-sm text-slate-500 truncate font-medium">
+                                                    {tx.description || 'Sin descripción'}
+                                                </p>
+                                                <div className="flex-shrink-0 bg-slate-100 px-1.5 py-0.5 rounded text-[10px] text-slate-500 font-bold">
+                                                    {tx.profiles?.display_name?.charAt(0).toUpperCase() || '?'}
                                                 </div>
                                             </div>
-                                        </div>
-                                        <div className="text-right flex-shrink-0">
-                                            <p className="font-bold text-slate-800 text-sm whitespace-nowrap">
+
+                                            <p className="font-bold text-slate-800 text-lg whitespace-nowrap mt-1">
                                                 {budget.currency} {Number(tx.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                                             </p>
                                         </div>
-                                        <div className="-mr-2">
+                                        <div className="-mr-2 self-center">
                                             <TransactionActions id={tx.id} />
                                         </div>
                                     </div>
