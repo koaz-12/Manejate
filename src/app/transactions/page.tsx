@@ -102,7 +102,7 @@ export default async function TransactionsPage() {
                                             </div>
                                         </div>
                                         <div className="flex-1 min-w-0 flex flex-col gap-1.5">
-                                            <div className="flex justify-between items-start">
+                                            <div className="flex justify-center items-center text-center">
                                                 <p className="font-bold text-slate-900 text-base truncate pr-2">
                                                     {(() => {
                                                         const cat = categoriesMap.get(tx.category_id)
@@ -117,11 +117,11 @@ export default async function TransactionsPage() {
                                                 </p>
                                             </div>
 
-                                            <p className="text-sm text-slate-600 font-medium leading-relaxed whitespace-normal break-words">
+                                            <p className="text-sm text-slate-600 font-medium leading-relaxed whitespace-normal break-words text-center">
                                                 {tx.description || 'Sin descripción'}
                                             </p>
 
-                                            <div className="flex items-center justify-end pt-1 mt-0.5 border-t border-slate-50">
+                                            <div className="flex items-center justify-start pt-1 mt-0.5 border-t border-slate-50">
                                                 <p className="font-bold text-slate-800 text-xl whitespace-nowrap">
                                                     {budget.currency} {Number(tx.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                                                 </p>
