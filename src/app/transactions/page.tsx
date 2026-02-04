@@ -91,8 +91,15 @@ export default async function TransactionsPage() {
                             <div className="space-y-3">
                                 {groupedTransactions[date]?.map((tx: any) => (
                                     <div key={tx.id} className="flex items-start bg-white p-3 rounded-2xl shadow-sm border border-slate-100 gap-3">
-                                        <div className="w-10 h-10 rounded-full bg-slate-50 flex-shrink-0 flex items-center justify-center text-xl mt-1">
-                                            {categoriesMap.get(tx.category_id)?.icon || '💸'}
+                                        <div className="flex flex-col items-center gap-1 mt-1">
+                                            <div className="w-10 h-10 rounded-full bg-slate-50 flex-shrink-0 flex items-center justify-center text-xl">
+                                                {categoriesMap.get(tx.category_id)?.icon || '💸'}
+                                            </div>
+                                            <div className="flex items-center gap-1 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-100 max-w-[48px] justify-center">
+                                                <span className="text-[9px] text-slate-500 font-bold uppercase tracking-wide truncate">
+                                                    {tx.profiles?.display_name?.split(' ')[0] || 'User'}
+                                                </span>
+                                            </div>
                                         </div>
                                         <div className="flex-1 min-w-0 flex flex-col gap-1.5">
                                             <div className="flex justify-between items-start">
@@ -114,20 +121,13 @@ export default async function TransactionsPage() {
                                                 {tx.description || 'Sin descripción'}
                                             </p>
 
-                                            <div className="flex items-center justify-between pt-1 mt-0.5 border-t border-slate-50">
-                                                <div className="flex items-center gap-1.5 bg-slate-50 px-2 py-1 rounded-md">
-                                                    <div className="w-1.5 h-1.5 rounded-full bg-slate-400"></div>
-                                                    <span className="text-[11px] text-slate-500 font-bold uppercase tracking-wide truncate max-w-[100px]">
-                                                        {tx.profiles?.display_name || 'Miembro'}
-                                                    </span>
-                                                </div>
-
+                                            <div className="flex items-center justify-end pt-1 mt-0.5 border-t border-slate-50">
                                                 <p className="font-bold text-slate-800 text-xl whitespace-nowrap">
                                                     {budget.currency} {Number(tx.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                                                 </p>
                                             </div>
                                         </div>
-                                        <div className="-mr-2 self-center">
+                                        <div className="-mr-2 self-start">
                                             <TransactionActions id={tx.id} />
                                         </div>
                                     </div>
