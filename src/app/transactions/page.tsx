@@ -97,7 +97,16 @@ export default async function TransactionsPage() {
                                         <div className="flex-1 min-w-0 flex flex-col gap-1.5">
                                             <div className="flex justify-between items-start">
                                                 <p className="font-bold text-slate-900 text-base truncate pr-2">
-                                                    {categoriesMap.get(tx.category_id)?.name || 'Gasto'}
+                                                    {(() => {
+                                                        const cat = categoriesMap.get(tx.category_id)
+                                                        const parent = cat?.parent_id ? categoriesMap.get(cat.parent_id) : null
+                                                        return parent ? (
+                                                            <span>
+                                                                <span className="text-slate-400 font-normal">{parent.name} › </span>
+                                                                {cat?.name}
+                                                            </span>
+                                                        ) : (cat?.name || 'Gasto')
+                                                    })()}
                                                 </p>
                                             </div>
 

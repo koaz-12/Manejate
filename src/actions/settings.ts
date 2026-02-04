@@ -62,6 +62,7 @@ export async function createCategory(formData: FormData) {
     const type = formData.get('type') as string // 'fixed', 'variable', 'income'
     const limit = parseFloat(formData.get('limit') as string) || 0
     const icon = formData.get('icon') as string || '🏷️'
+    const parentId = formData.get('parentId') as string || null
 
     if (!budgetId || !name || !type) return { error: 'Missing required fields' }
 
@@ -72,7 +73,8 @@ export async function createCategory(formData: FormData) {
             name,
             type,
             budget_limit: limit,
-            icon
+            icon,
+            parent_id: parentId
         })
 
     if (error) {

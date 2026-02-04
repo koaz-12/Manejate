@@ -10,6 +10,7 @@ interface Category {
     budget_limit: number
     icon: string
     type: string
+    parent_id?: string | null
 }
 
 interface Props {
@@ -20,22 +21,35 @@ interface Props {
 
 export function CategoryList({ categories, currency, budgetId }: Props) {
     const [isCreating, setIsCreating] = useState(false)
+    const [creatingParentId, setCreatingParentId] = useState<string | null>(null)
     const [loading, setLoading] = useState(false)
 
-    // Group by Type
-    const incomeCats = categories.filter(c => c.type === 'income')
-    const fixedCats = categories.filter(c => c.type === 'fixed')
-    const variableCats = categories.filter(c => c.type === 'variable')
+    // Helper to get children
+    const getChildren = (parentId: string) => categories.filter(c => c.parent_id === parentId)
+
+    // Group by Type (Top Level Only)
+    const incomeCats = categories.filter(c => c.type === 'income' && !c.parent_id)
+    const fixedCats = categories.filter(c => c.type === 'fixed' && !c.parent_id)
+    const variableCats = categories.filter(c => c.type === 'variable' && !c.parent_id)
 
     async function handleCreate(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault()
         setLoading(true)
         const formData = new FormData(e.currentTarget)
         formData.append('budgetId', budgetId)
+        if (creatingParentId) {
+            formData.append('parentId', creatingParentId)
+        }
 
         await createCategory(formData)
         setLoading(false)
         setIsCreating(false)
+        setCreatingParentId(null)
+    }
+
+    const cancelCreation = () => {
+        setIsCreating(false)
+        setCreatingParentId(null)
     }
 
     return (
@@ -51,12 +65,14 @@ export function CategoryList({ categories, currency, budgetId }: Props) {
                 </button>
             </div>
 
-            {isCreating && (
+            {(isCreating || creatingParentId) && (
                 <form onSubmit={handleCreate} className="bg-white p-4 rounded-2xl shadow-md border-2 border-emerald-100 animate-in fade-in slide-in-from-top-2">
-                    <p className="text-xs font-bold text-slate-400 mb-3 uppercase tracking-wider">Crear Nueva</p>
+                    <p className="text-xs font-bold text-slate-400 mb-3 uppercase tracking-wider">
+                        {creatingParentId ? 'Crear Subcategoría' : 'Crear Nueva Categoría'}
+                    </p>
                     <div className="space-y-3">
                         <div className="flex gap-2">
-                            <input name="icon" placeholder="💊" className="w-12 h-12 text-center text-xl bg-slate-50 rounded-xl border border-slate-200 outline-none focus:border-emerald-500" maxLength={2} required />
+                            <input name="icon" placeholder="🏷️" className="w-12 h-12 text-center text-xl bg-slate-50 rounded-xl border border-slate-200 outline-none focus:border-emerald-500" maxLength={2} required />
                             <div className="flex-1 space-y-2">
                                 <input name="name" placeholder="Nombre (ej. Extras)" className="w-full px-3 py-2 bg-slate-50 rounded-xl border border-slate-200 outline-none focus:border-emerald-500 text-sm font-bold" required />
                                 <div className="flex gap-2">
@@ -70,7 +86,7 @@ export function CategoryList({ categories, currency, budgetId }: Props) {
                             </div>
                         </div>
                         <div className="flex justify-end gap-2 pt-2">
-                            <button type="button" onClick={() => setIsCreating(false)} className="px-4 py-2 text-slate-400 text-sm font-medium hover:text-slate-600">Cancelar</button>
+                            <button type="button" onClick={cancelCreation} className="px-4 py-2 text-slate-400 text-sm font-medium hover:text-slate-600">Cancelar</button>
                             <button type="submit" disabled={loading} className="px-4 py-2 bg-emerald-500 text-white rounded-xl text-sm font-bold hover:bg-emerald-600 disabled:opacity-50">
                                 {loading ? 'Guardando...' : 'Crear'}
                             </button>
@@ -84,7 +100,16 @@ export function CategoryList({ categories, currency, budgetId }: Props) {
                 <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 px-2">Ingresos</h3>
                 <div className="space-y-2">
                     {incomeCats.length === 0 && <p className="text-sm text-slate-400 px-2 italic">Sin categorías de ingreso.</p>}
-                    {incomeCats.map(cat => <CategoryRow key={cat.id} category={cat} currency={currency} />)}
+                    {incomeCats.map(cat => (
+                        <div key={cat.id}>
+                            <CategoryRow category={cat} currency={currency} onAddSub={() => setCreatingParentId(cat.id)} />
+                            {getChildren(cat.id).length > 0 && (
+                                <div className="pl-4 mt-2 space-y-2 ml-4 border-l border-slate-100">
+                                    {getChildren(cat.id).map(child => <CategoryRow key={child.id} category={child} currency={currency} />)}
+                                </div>
+                            )}
+                        </div>
+                    ))}
                 </div>
             </div>
 
@@ -92,7 +117,16 @@ export function CategoryList({ categories, currency, budgetId }: Props) {
             <div>
                 <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 px-2">Gastos Fijos</h3>
                 <div className="space-y-2">
-                    {fixedCats.map(cat => <CategoryRow key={cat.id} category={cat} currency={currency} />)}
+                    {fixedCats.map(cat => (
+                        <div key={cat.id}>
+                            <CategoryRow category={cat} currency={currency} onAddSub={() => setCreatingParentId(cat.id)} />
+                            {getChildren(cat.id).length > 0 && (
+                                <div className="pl-4 mt-2 space-y-2 ml-4 border-l border-slate-100">
+                                    {getChildren(cat.id).map(child => <CategoryRow key={child.id} category={child} currency={currency} />)}
+                                </div>
+                            )}
+                        </div>
+                    ))}
                 </div>
             </div>
 
@@ -100,14 +134,23 @@ export function CategoryList({ categories, currency, budgetId }: Props) {
             <div>
                 <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 px-2">Gastos Variables</h3>
                 <div className="space-y-2">
-                    {variableCats.map(cat => <CategoryRow key={cat.id} category={cat} currency={currency} />)}
+                    {variableCats.map(cat => (
+                        <div key={cat.id}>
+                            <CategoryRow category={cat} currency={currency} onAddSub={() => setCreatingParentId(cat.id)} />
+                            {getChildren(cat.id).length > 0 && (
+                                <div className="pl-4 mt-2 space-y-2 ml-4 border-l border-slate-100">
+                                    {getChildren(cat.id).map(child => <CategoryRow key={child.id} category={child} currency={currency} />)}
+                                </div>
+                            )}
+                        </div>
+                    ))}
                 </div>
             </div>
         </div>
     )
 }
 
-function CategoryRow({ category, currency }: { category: Category, currency: string }) {
+function CategoryRow({ category, currency, onAddSub }: { category: Category, currency: string, onAddSub?: () => void }) {
     const [isEditing, setIsEditing] = useState(false)
     const [loading, setLoading] = useState(false)
 
@@ -147,7 +190,7 @@ function CategoryRow({ category, currency }: { category: Category, currency: str
     }
 
     return (
-        <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex justify-between items-center group">
+        <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex justify-between items-center group relative">
             <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-xl border border-slate-100">
                     {category.icon || '📦'}
@@ -164,9 +207,16 @@ function CategoryRow({ category, currency }: { category: Category, currency: str
                     </p>
                 </div>
             </div>
-            <button onClick={() => setIsEditing(true)} className="p-2 text-slate-300 hover:text-[var(--secondary)] transition-colors">
-                <Pencil className="w-4 h-4" />
-            </button>
+            <div className="flex items-center">
+                {onAddSub && (
+                    <button onClick={onAddSub} className="p-2 text-slate-300 hover:text-emerald-500 transition-colors" title="Agregar subcategoría">
+                        <Plus className="w-4 h-4" />
+                    </button>
+                )}
+                <button onClick={() => setIsEditing(true)} className="p-2 text-slate-300 hover:text-[var(--secondary)] transition-colors">
+                    <Pencil className="w-4 h-4" />
+                </button>
+            </div>
         </div>
     )
 }

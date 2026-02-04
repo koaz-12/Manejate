@@ -9,6 +9,7 @@ interface Category {
     name: string
     icon: string
     type: string
+    parent_id?: string | null
 }
 
 interface TransactionData {
@@ -43,6 +44,10 @@ export function AddTransactionForm({ budgetId, categories, currency, initialData
         if (type === 'income') return c.type === 'income'
         return c.type === 'fixed' || c.type === 'variable'
     })
+
+    // Group by Parent
+    const parents = filteredCategories.filter(c => !c.parent_id)
+    const getChildren = (parentId: string) => filteredCategories.filter(c => c.parent_id === parentId)
 
     async function handleSubmit(formData: FormData) {
         setLoading(true)
@@ -119,23 +124,52 @@ export function AddTransactionForm({ budgetId, categories, currency, initialData
                 <p className="text-sm font-medium text-slate-700">Categoría</p>
 
                 {filteredCategories.length > 0 ? (
-                    <div className="grid grid-cols-3 gap-3">
-                        {filteredCategories.map((cat) => (
-                            <button
-                                key={cat.id}
-                                type="button"
-                                onClick={() => setSelectedCategory(cat.id)}
-                                className={`p-4 rounded-2xl border transition-all flex flex-col items-center gap-2 ${selectedCategory === cat.id
-                                    ? `bg-emerald-50 ring-2 ring-emerald-200 ${type === 'expense' ? 'border-emerald-500' : 'border-emerald-500'}`
-                                    : 'border-slate-100 bg-white hover:border-slate-300 hover:bg-slate-50'
-                                    }`}
-                            >
-                                <span className="text-2xl">{cat.icon || '📦'}</span>
-                                <span className={`text-xs font-medium ${selectedCategory === cat.id ? 'text-emerald-700' : 'text-slate-600'}`}>
-                                    {cat.name}
-                                </span>
-                            </button>
-                        ))}
+                    <div className="space-y-6">
+                        {parents.map((parent) => {
+                            const children = getChildren(parent.id)
+                            return (
+                                <div key={parent.id} className="space-y-2">
+                                    {/* Parent Header/Button (Can be selected) */}
+                                    <div className="flex items-center gap-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => setSelectedCategory(parent.id)}
+                                            className={`flex-1 p-3 rounded-xl border transition-all flex items-center gap-3 text-left ${selectedCategory === parent.id
+                                                ? `bg-emerald-50 ring-2 ring-emerald-200 border-emerald-500`
+                                                : 'border-slate-100 bg-white hover:border-slate-300 hover:bg-slate-50'
+                                                }`}
+                                        >
+                                            <span className="text-xl">{parent.icon || '📦'}</span>
+                                            <span className={`text-sm font-bold ${selectedCategory === parent.id ? 'text-emerald-700' : 'text-slate-700'}`}>
+                                                {parent.name}
+                                            </span>
+                                        </button>
+                                    </div>
+
+                                    {/* Children Grid */}
+                                    {children.length > 0 && (
+                                        <div className="grid grid-cols-3 gap-2 pl-4 border-l-2 border-slate-100 ml-2">
+                                            {children.map(child => (
+                                                <button
+                                                    key={child.id}
+                                                    type="button"
+                                                    onClick={() => setSelectedCategory(child.id)}
+                                                    className={`p-2 rounded-xl border transition-all flex flex-col items-center gap-1 ${selectedCategory === child.id
+                                                        ? `bg-emerald-50 ring-2 ring-emerald-200 border-emerald-500`
+                                                        : 'border-slate-100 bg-white hover:border-slate-300 hover:bg-slate-50'
+                                                        }`}
+                                                >
+                                                    <span className="text-lg">{child.icon || '🔹'}</span>
+                                                    <span className={`text-[10px] font-medium text-center leading-tight ${selectedCategory === child.id ? 'text-emerald-700' : 'text-slate-500'}`}>
+                                                        {child.name}
+                                                    </span>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            )
+                        })}
                     </div>
                 ) : (
                     <div className="text-center p-6 bg-slate-50 rounded-2xl border border-dashed border-slate-200 text-slate-400 text-sm">
@@ -176,7 +210,7 @@ export function AddTransactionForm({ budgetId, categories, currency, initialData
                 </div>
             </div>
 
-            {/* Recurring Option (Only for Expenses usually, but could be for Salary too) */}
+            {/* Recurring Option */}
             <div className="flex items-center gap-3 pt-2">
                 <div className="relative flex items-center">
                     <input
