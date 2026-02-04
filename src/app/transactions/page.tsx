@@ -94,25 +94,29 @@ export default async function TransactionsPage() {
                                         <div className="w-10 h-10 rounded-full bg-slate-50 flex-shrink-0 flex items-center justify-center text-xl mt-1">
                                             {categoriesMap.get(tx.category_id)?.icon || '💸'}
                                         </div>
-                                        <div className="flex-1 min-w-0 flex flex-col gap-0.5">
+                                        <div className="flex-1 min-w-0 flex flex-col gap-1.5">
                                             <div className="flex justify-between items-start">
                                                 <p className="font-bold text-slate-900 text-base truncate pr-2">
                                                     {categoriesMap.get(tx.category_id)?.name || 'Gasto'}
                                                 </p>
                                             </div>
 
-                                            <div className="flex items-center gap-1.5">
-                                                <p className="text-sm text-slate-500 truncate font-medium">
-                                                    {tx.description || 'Sin descripción'}
-                                                </p>
-                                                <div className="flex-shrink-0 bg-slate-100 px-1.5 py-0.5 rounded text-[10px] text-slate-500 font-bold">
-                                                    {tx.profiles?.display_name?.charAt(0).toUpperCase() || '?'}
-                                                </div>
-                                            </div>
-
-                                            <p className="font-bold text-slate-800 text-lg whitespace-nowrap mt-1">
-                                                {budget.currency} {Number(tx.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                                            <p className="text-sm text-slate-600 font-medium leading-relaxed whitespace-normal break-words">
+                                                {tx.description || 'Sin descripción'}
                                             </p>
+
+                                            <div className="flex items-center justify-between pt-1 mt-0.5 border-t border-slate-50">
+                                                <div className="flex items-center gap-1.5 bg-slate-50 px-2 py-1 rounded-md">
+                                                    <div className="w-1.5 h-1.5 rounded-full bg-slate-400"></div>
+                                                    <span className="text-[11px] text-slate-500 font-bold uppercase tracking-wide truncate max-w-[100px]">
+                                                        {tx.profiles?.display_name || 'Miembro'}
+                                                    </span>
+                                                </div>
+
+                                                <p className="font-bold text-slate-800 text-xl whitespace-nowrap">
+                                                    {budget.currency} {Number(tx.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                                                </p>
+                                            </div>
                                         </div>
                                         <div className="-mr-2 self-center">
                                             <TransactionActions id={tx.id} />
