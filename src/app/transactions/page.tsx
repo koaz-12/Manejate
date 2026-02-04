@@ -102,22 +102,28 @@ export default async function TransactionsPage() {
                                             </div>
                                         </div>
                                         <div className="flex-1 min-w-0 flex flex-col gap-1.5">
-                                            <div className="flex justify-center items-center text-center">
-                                                <p className="font-bold text-slate-900 text-base truncate pr-2">
-                                                    {(() => {
-                                                        const cat = categoriesMap.get(tx.category_id)
-                                                        const parent = cat?.parent_id ? categoriesMap.get(cat.parent_id) : null
-                                                        return parent ? (
-                                                            <span>
-                                                                <span className="text-slate-400 font-normal">{parent.name} › </span>
+                                            <div className="flex flex-col items-center justify-center text-center">
+                                                {(() => {
+                                                    const cat = categoriesMap.get(tx.category_id)
+                                                    const parent = cat?.parent_id ? categoriesMap.get(cat.parent_id) : null
+                                                    return parent ? (
+                                                        <>
+                                                            <p className="font-bold text-slate-900 text-base leading-tight">
+                                                                {parent.name}
+                                                            </p>
+                                                            <p className="text-xs text-slate-500 font-medium bg-slate-50 px-2 py-0.5 rounded-full mt-0.5">
                                                                 {cat?.name}
-                                                            </span>
-                                                        ) : (cat?.name || 'Gasto')
-                                                    })()}
-                                                </p>
+                                                            </p>
+                                                        </>
+                                                    ) : (
+                                                        <p className="font-bold text-slate-900 text-base leading-tight">
+                                                            {cat?.name || 'Gasto'}
+                                                        </p>
+                                                    )
+                                                })()}
                                             </div>
 
-                                            <p className="text-sm text-slate-600 font-medium leading-relaxed whitespace-normal break-words text-center">
+                                            <p className="text-sm text-slate-600 font-medium leading-relaxed whitespace-normal break-words text-left mt-1">
                                                 {tx.description || 'Sin descripción'}
                                             </p>
 
