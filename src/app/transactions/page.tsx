@@ -96,14 +96,14 @@ export default async function TransactionsPage() {
                                                 {categoriesMap.get(tx.category_id)?.icon || '💸'}
                                             </div>
                                             <div className="min-w-0">
-                                                <p className="font-semibold text-slate-800 text-sm truncate">
+                                                <p className="font-bold text-slate-900 text-base truncate">
                                                     {categoriesMap.get(tx.category_id)?.name || 'Gasto'}
                                                 </p>
                                                 <div className="flex items-center gap-1.5">
-                                                    <p className="text-xs text-slate-400 truncate">
+                                                    <p className="text-sm text-slate-600 truncate font-medium">
                                                         {tx.description || 'Sin descripción'}
                                                     </p>
-                                                    <div className="flex-shrink-0 bg-slate-100 px-1.5 py-0.5 rounded text-[10px] text-slate-500 font-bold">
+                                                    <div className="flex-shrink-0 bg-slate-100 px-2 py-0.5 rounded text-[11px] text-slate-600 font-bold">
                                                         {tx.profiles?.display_name?.charAt(0).toUpperCase() || '?'}
                                                     </div>
                                                 </div>
