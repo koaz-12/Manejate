@@ -6,8 +6,6 @@ import { Bell, User } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { checkRecurringExpenses } from '@/actions/recurring';
-import { RecurringAlert } from '@/components/Dashboard/RecurringAlert';
 import { BudgetHeader } from '@/components/Layout/BudgetHeader';
 import { cookies } from 'next/headers';
 import { RecentTransactions } from '@/components/Dashboard/RecentTransactions';
@@ -173,7 +171,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
   // ... inside component ...
 
   // Check for Recurring Expenses
-  const { count: recurringCount, expenses: recurringExpenses } = await checkRecurringExpenses(budget.id, cutoffDay);
+  // const { count: recurringCount, expenses: recurringExpenses } = await checkRecurringExpenses(budget.id, cutoffDay);
 
   return (
     <div className="min-h-screen bg-slate-50 pb-24">
@@ -191,9 +189,9 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
       <main className="px-6 space-y-6 mt-4">
 
         {/* Recurring Alert */}
-        {recurringCount > 0 && (
+        {/* {recurringCount > 0 && (
           <RecurringAlert expenses={recurringExpenses} />
-        )}
+        )} */}
 
         <SummaryCard
           available={available}
