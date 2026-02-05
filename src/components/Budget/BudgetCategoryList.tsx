@@ -85,7 +85,7 @@ export function BudgetCategoryList({ categories, currency, budgetId }: Props) {
 
 function FixedCategoryCard({ category, currency }: { category: CategoryItem, currency: string }) {
     const isPaid = category.spent >= category.limit
-    const percent = Math.min((category.spent / category.limit) * 100, 100)
+    const percent = category.limit > 0 ? Math.min((category.spent / category.limit) * 100, 100) : 0
 
     return (
         <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4 hover:shadow-md transition-shadow">
