@@ -11,17 +11,33 @@ export default async function GoalsPage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) redirect('/login')
 
-    // Find Budget - Simplified Logic: Get the first one user is member of
-    // In real app we read cookie 'selected_budget' or use context
-    // This repeats in almost every page, ideally should be a util function or middleware
-    const { data: membership } = await supabase
+    // Get ALL User's Budgets
+    const { data: memberships } = await supabase
         .from('budget_members')
         .select('budgets(*)')
-        .eq('user_id', user.id)
-        .single()
+        .eq('user_id', user.id);
 
-    const budget = membership?.budgets as any
-    if (!budget) redirect('/')
+    const budgets = memberships?.map((m: any) => m.budgets) || [];
+
+    if (budgets.length === 0) return (
+        <div className="min-h-screen flex items-center justify-center p-6 bg-slate-50">
+            <div className="text-center">
+                <p className="text-slate-500 mb-4">No tienes presupuestos activos.</p>
+                <Link href="/" className="text-emerald-600 font-bold hover:underline">Ir al Inicio</Link>
+            </div>
+            <BottomNav />
+        </div>
+    );
+
+    // Determine Current Budget
+    const { cookies } = await import('next/headers');
+    const cookieStore = await cookies();
+    const selectedId = cookieStore.get('selected_budget')?.value;
+
+    let budget = budgets.find((b: any) => b.id === selectedId);
+    if (!budget) {
+        budget = budgets[0];
+    }
 
     // Fetch Goals
     const { data: goals } = await supabase
