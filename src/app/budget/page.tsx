@@ -6,6 +6,7 @@ import { AlertCircle, CheckCircle2, Users } from 'lucide-react'
 import { cookies } from 'next/headers'
 import { CollaborationManager } from '@/components/Budget/CollaborationManager'
 import { BudgetHeader } from '@/components/Layout/BudgetHeader'
+import { BudgetCategoryList } from '@/components/Budget/BudgetCategoryList'
 
 export default async function BudgetPage({ searchParams }: { searchParams: Promise<{ date?: string }> }) {
     const params = await Promise.resolve(searchParams)
@@ -71,13 +72,12 @@ export default async function BudgetPage({ searchParams }: { searchParams: Promi
     }
 
     // 3. Fetch Data
-    const { data: categories } = await supabase
+    const { data: allCategories } = await supabase
         .from('categories')
         .select('*')
         .eq('budget_id', budget.id)
-        .eq('type', 'variable') // Only variables usually have limits? Or Fixed too? Fixed are limits themselves. Let's fetch all except income.
-        .neq('type', 'income')
-        .order('budget_limit', { ascending: false })
+        .neq('type', 'income') // Get all expenses (Fixed & Variable)
+    // We will sort later manually
 
     const { data: transactions } = await supabase
         .from('transactions')
@@ -93,16 +93,80 @@ export default async function BudgetPage({ searchParams }: { searchParams: Promi
         spendingMap.set(tx.category_id, current + Number(tx.amount))
     })
 
-    const budgetItems = categories?.map(cat => {
-        const spent = spendingMap.get(cat.id) || 0
+    // Helper to process category stats
+    const processCategory = (cat: any) => {
+        const directSpent = spendingMap.get(cat.id) || 0
         const limit = Number(cat.budget_limit) || 0
-        const percent = limit > 0 ? (spent / limit) * 100 : 0
-        const remaining = limit - spent
-        return { ...cat, spent, limit, percent, remaining }
-    }) || []
+        return {
+            ...cat,
+            spent: directSpent, // Initial value, will be rolled up
+            directSpent,
+            limit,
+            children: [] as any[]
+        }
+    }
 
-    const totalBudgeted = budgetItems.reduce((sum, item) => sum + item.limit, 0)
-    const totalSpent = budgetItems.reduce((sum, item) => sum + item.spent, 0)
+    // Build Hierarchy & Rollup
+    const categoryMap = new Map()
+    const rootCategories: any[] = []
+
+    // first pass: create objects
+    allCategories?.forEach(cat => {
+        categoryMap.set(cat.id, processCategory(cat))
+    })
+
+    // second pass: link children and ROLLUP spending
+    allCategories?.forEach(originalCat => {
+        const cat = categoryMap.get(originalCat.id)
+        if (originalCat.parent_id) {
+            const parent = categoryMap.get(originalCat.parent_id)
+            if (parent) {
+                parent.children.push(cat)
+                // Rollup Logic: Add child spending to parent
+                // Note: This simple loop works because we assume only 1 level of depth for now.
+                // If unlimited depth, we'd need recursion.
+            } else {
+                rootCategories.push(cat) // Orphan? Treat as root
+            }
+        } else {
+            rootCategories.push(cat)
+        }
+    })
+
+    // third pass: Final sums for parents (since we pushed children, now we settle totals)
+    rootCategories.forEach(parent => {
+        // Parent's total spent = Direct + Children's Spent
+        const childrenSpent = parent.children.reduce((sum: number, child: any) => sum + child.spent, 0)
+        parent.spent += childrenSpent
+
+        parent.remaining = parent.limit - parent.spent
+        parent.percent = parent.limit > 0 ? (parent.spent / parent.limit) * 100 : 0
+
+        // Sort children by spent descending
+        parent.children.sort((a: any, b: any) => b.spent - a.spent)
+    })
+
+    // Filter Logic: We generally want to show Variable expenses here, 
+    // but user might want to see Fixed too in "Monthly Budget"?
+    // User context implies "Variable" management mostly, but let's stick to what we had (Variable only?)
+    // Actually, previously we filtered `.eq('type', 'variable')`. Let's keep that focus for the main list,
+    // OR show all expenses because "Presupuesto Mensual" usually implies everything.
+    // Let's filter roots by 'variable' to match previous behavior, but keep 'fixed' if requested.
+    // Given the prompt "subcategories inside category", let's show all that match structure.
+
+    // Let's filter to show only Root Categories that are 'variable' OR have children that are 'variable'?
+    // Simple approach: Show all root variable categories for now.
+    const displayCategories = rootCategories
+        .filter(c => c.type === 'variable')
+        .sort((a, b) => b.limit - a.limit)
+
+    // Global Totals (based on filtered list + others? No, global status should be REAL total)
+    // We should calculate global total based on ALL expenses (Fixed + Variable) to vary "Available" correctly?
+    // Previously we calculated based on the list shown. Let's stick to consistent view.
+    // Wait, "Total Budgeted" was sum of limits. "Total Spent" sum of spent.
+
+    const totalBudgeted = displayCategories.reduce((sum, item) => sum + item.limit, 0)
+    const totalSpent = displayCategories.reduce((sum, item) => sum + item.spent, 0) // Includes rollup
     const totalRemaining = totalBudgeted - totalSpent
 
     return (
@@ -151,53 +215,18 @@ export default async function BudgetPage({ searchParams }: { searchParams: Promi
                     </div>
                 </div>
 
-                {/* Categories Breakdown */}
-                <div className="space-y-4">
-                    <h3 className="font-bold text-slate-800 text-lg">Desglose por Categoría</h3>
-
-                    {budgetItems.map(item => (
-                        <div key={item.id} className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
-                            <div className="flex items-center gap-3 mb-3">
-                                <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-xl">
-                                    {item.icon || '🏷️'}
-                                </div>
-                                <div className="flex-1">
-                                    <div className="flex justify-between">
-                                        <h4 className="font-bold text-slate-800">{item.name}</h4>
-                                        <span className={`text-sm font-bold ${item.remaining < 0 ? 'text-red-500' : 'text-emerald-600'}`}>
-                                            {item.remaining < 0 ? '-' : ''}{budget.currency} {Math.abs(item.remaining).toLocaleString()}
-                                        </span>
-                                    </div>
-                                    <div className="flex justify-between text-xs text-slate-400 mt-1">
-                                        <span>Gasto: {budget.currency} {item.spent.toLocaleString()}</span>
-                                        <span>Límite: {budget.currency} {item.limit.toLocaleString()}</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Mini Progress */}
-                            <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
-                                <div
-                                    className={`h-full rounded-full ${item.percent > 100 ? 'bg-red-500' : item.percent > 80 ? 'bg-amber-400' : 'bg-emerald-400'}`}
-                                    style={{ width: `${Math.min(item.percent, 100)}%` }}
-                                />
-                            </div>
-                        </div>
-                    ))}
-
-                    {budgetItems.length === 0 && (
-                        <p className="text-center text-slate-400 py-8">
-                            No tienes categorías de gastos configuradas.
-                            <br />
-                            Ve a <a href="/settings" className="text-indigo-600 font-bold">Ajustes</a> para crearlas.
-                        </p>
-                    )}
-                </div>
-
-                {/* Collaboration Shortcuts - Moved to Header */}
+                {/* New Hierarchical Category List */}
+                <BudgetCategoryList categories={displayCategories} currency={budget.currency} />
 
             </main>
             <BottomNav />
         </div>
+    )
+
+    {/* Collaboration Shortcuts - Moved to Header */ }
+
+            </main >
+        <BottomNav />
+        </div >
     )
 }
