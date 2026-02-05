@@ -223,10 +223,5 @@ export default async function BudgetPage({ searchParams }: { searchParams: Promi
         </div>
     )
 
-    {/* Collaboration Shortcuts - Moved to Header */ }
 
-            </main >
-        <BottomNav />
-        </div >
-    )
 }
