@@ -173,12 +173,12 @@ function BudgetCategoryRow({ category, currency }: { category: CategoryItem, cur
                         <div className="flex justify-between items-center mb-0.5">
                             <h4 className="font-bold text-slate-800">{category.name}</h4>
                             <span className={`text-sm font-bold ${textColor}`}>
-                                {isOverspent ? '-' : ''}{currency} {Math.abs(category.remaining).toLocaleString()}
+                                {isOverspent ? '-' : ''}{currency} {Math.abs(category.remaining).toLocaleString('en-US')}
                             </span>
                         </div>
                         <div className="flex justify-between text-xs text-slate-400">
-                            <span>Gasto: {currency} {category.spent.toLocaleString()}</span>
-                            <span>Límite: {currency} {category.limit.toLocaleString()}</span>
+                            <span>Gasto: {currency} {category.spent.toLocaleString('en-US')}</span>
+                            <span>Límite: {currency} {category.limit.toLocaleString('en-US')}</span>
                         </div>
                     </div>
                 </div>
@@ -269,7 +269,7 @@ function BudgetSubCategoryRow({ category, currency }: { category: CategoryItem, 
             <div className="flex-1">
                 <div className="flex justify-between items-center mb-1">
                     <p className="text-sm font-medium text-slate-700">{category.name}</p>
-                    <p className="text-sm font-bold text-slate-600">{currency} {category.spent.toLocaleString()}</p>
+                    <p className="text-sm font-bold text-slate-600">{currency} {category.spent.toLocaleString('en-US')}</p>
                 </div>
                 {/* Child Progress */}
                 <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
