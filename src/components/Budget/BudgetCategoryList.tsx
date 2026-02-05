@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { ChevronDown, ChevronRight, AlertTriangle, Pencil, Trash2, Check, X, Loader2 } from 'lucide-react'
 import { updateCategory, deleteCategory } from '@/actions/settings'
 
@@ -13,20 +14,20 @@ interface CategoryItem {
     remaining: number
     percent: number
     children: CategoryItem[]
-    budget_limit: number // Need raw limit for editing
+    budget_limit: number
 }
 
 interface Props {
     categories: CategoryItem[]
     currency: string
+    budgetId: string
 }
 
-export function BudgetCategoryList({ categories, currency }: Props) {
+export function BudgetCategoryList({ categories, currency, budgetId }: Props) {
     return (
         <div className="space-y-4">
             <div className="flex justify-between items-center">
                 <h3 className="font-bold text-slate-800 text-lg">Desglose por Categoría</h3>
-                {/* Optional: Add "Reorder" or "Manage" global button later */}
             </div>
 
             {categories.map(cat => (
@@ -43,36 +44,92 @@ export function BudgetCategoryList({ categories, currency }: Props) {
 }
 
 function BudgetCategoryRow({ category, currency }: { category: CategoryItem, currency: string }) {
+    const router = useRouter()
     const [isOpen, setIsOpen] = useState(false)
     const [isEditing, setIsEditing] = useState(false)
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
     const [loading, setLoading] = useState(false)
-    const hasChildren = category.children && category.children.length > 0
+    const [limitValue, setLimitValue] = useState(category.budget_limit.toString())
 
-    // Visual Helpers
+    const hasChildren = category.children && category.children.length > 0
     const isOverspent = category.remaining < 0
     const progressColor = isOverspent ? 'bg-red-500' : category.percent > 85 ? 'bg-amber-400' : 'bg-emerald-400'
     const textColor = isOverspent ? 'text-red-500' : 'text-emerald-600'
+
+    // Format initial value on edit start
+    useEffect(() => {
+        if (isEditing) {
+            setLimitValue(formatNumber(category.budget_limit))
+        }
+    }, [isEditing, category.budget_limit])
+
+    const formatNumber = (num: string | number) => {
+        if (!num) return ''
+        const parts = num.toString().split('.')
+        parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+        return parts.join('.')
+    }
+
+    const handleLimitChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        // Remove non-numeric chars except dot
+        const raw = e.target.value.replace(/[^0-9.]/g, '')
+        setLimitValue(formatNumber(raw))
+    }
 
     async function handleSave(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault()
         e.stopPropagation()
         setLoading(true)
         const formData = new FormData(e.currentTarget)
+        const rawLimit = limitValue.replace(/,/g, '') // Remove commas for numbers
+
         formData.append('categoryId', category.id)
-        // Icon handling simpler here or keep existing
         formData.append('icon', category.icon)
+        formData.set('limit', rawLimit) // Override with clean number
 
         await updateCategory(formData)
         setLoading(false)
         setIsEditing(false)
+        router.refresh()
     }
 
     async function handleDelete(e: React.MouseEvent) {
         e.stopPropagation()
-        if (!confirm('¿Eliminar esta categoría y todo su contenido?')) return
         setLoading(true)
-        await deleteCategory(category.id)
-        // Router refresh usually handled by action revalidate
+        const res = await deleteCategory(category.id)
+        if (res?.error) {
+            alert(res.error)
+            setLoading(false)
+        } else {
+            router.refresh()
+            // Keep loading true until refresh completes or component unmounts
+        }
+    }
+
+    // Custom Delete Modal
+    if (showDeleteConfirm) {
+        return (
+            <div className="bg-red-50 p-4 rounded-2xl border border-red-100 animate-in fade-in zoom-in-95">
+                <p className="text-red-800 font-bold mb-1">¿Eliminar categoría?</p>
+                <p className="text-red-600 text-sm mb-3">Se borrarán también todas sus subcategorías.</p>
+                <div className="flex gap-2">
+                    <button
+                        onClick={(e) => { e.stopPropagation(); setShowDeleteConfirm(false) }}
+                        className="flex-1 py-2 bg-white text-slate-600 font-bold rounded-xl text-sm border border-red-100"
+                    >
+                        Cancelar
+                    </button>
+                    <button
+                        onClick={handleDelete}
+                        className="flex-1 py-2 bg-red-500 text-white font-bold rounded-xl text-sm hover:bg-red-600 flex items-center justify-center gap-2"
+                        disabled={loading}
+                    >
+                        {loading && <Loader2 className="w-3 h-3 animate-spin" />}
+                        Eliminar
+                    </button>
+                </div>
+            </div>
+        )
     }
 
     // Edit Mode UI
@@ -99,11 +156,11 @@ function BudgetCategoryRow({ category, currency }: { category: CategoryItem, cur
                                 <div className="flex items-center gap-1 border-b border-slate-200 focus-within:border-indigo-500 py-1">
                                     <span className="text-slate-400 text-sm">{currency}</span>
                                     <input
-                                        name="limit"
-                                        type="number"
-                                        step="0.01"
-                                        defaultValue={category.budget_limit}
+                                        type="text"
+                                        value={limitValue}
+                                        onChange={handleLimitChange}
                                         className="w-full font-bold text-slate-800 outline-none"
+                                        inputMode="decimal"
                                     />
                                 </div>
                             </div>
@@ -114,7 +171,7 @@ function BudgetCategoryRow({ category, currency }: { category: CategoryItem, cur
                 <div className="flex justify-end gap-2 mt-2">
                     <button
                         type="button"
-                        onClick={(e) => { e.stopPropagation(); handleDelete(e) }}
+                        onClick={(e) => { e.stopPropagation(); setShowDeleteConfirm(true) }}
                         className="mr-auto p-2 text-red-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                     >
                         <Trash2 className="w-4 h-4" />
@@ -143,7 +200,6 @@ function BudgetCategoryRow({ category, currency }: { category: CategoryItem, cur
     return (
         <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 overflow-hidden transition-all duration-200 group relative">
 
-            {/* Edit Trigger (Always visible now for mobile) */}
             <button
                 onClick={(e) => { e.stopPropagation(); setIsEditing(true) }}
                 className="absolute top-3 right-3 p-2 text-indigo-400 hover:text-indigo-600 transition-colors z-20"
@@ -151,12 +207,10 @@ function BudgetCategoryRow({ category, currency }: { category: CategoryItem, cur
                 <Pencil className="w-4 h-4" />
             </button>
 
-            {/* Main Clickable Area */}
             <div
                 onClick={() => hasChildren && setIsOpen(!isOpen)}
                 className={`flex flex-col gap-3 ${hasChildren ? 'cursor-pointer' : ''}`}
             >
-                {/* Header: Icon + Info */}
                 <div className="flex items-center gap-3">
                     <div className="relative">
                         <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-xl">
@@ -169,7 +223,7 @@ function BudgetCategoryRow({ category, currency }: { category: CategoryItem, cur
                         )}
                     </div>
 
-                    <div className="flex-1 pr-10"> {/* Increased padding to avoid overlap */}
+                    <div className="flex-1 pr-10">
                         <div className="flex justify-between items-center mb-0.5">
                             <h4 className="font-bold text-slate-800">{category.name}</h4>
                             <span className={`text-sm font-bold ${textColor}`}>
@@ -183,7 +237,6 @@ function BudgetCategoryRow({ category, currency }: { category: CategoryItem, cur
                     </div>
                 </div>
 
-                {/* Progress Bar (Full Width) */}
                 <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
                     <div
                         className={`h-full rounded-full ${progressColor}`}
@@ -192,7 +245,6 @@ function BudgetCategoryRow({ category, currency }: { category: CategoryItem, cur
                 </div>
             </div>
 
-            {/* Children List - Collapsible */}
             {hasChildren && isOpen && (
                 <div className="mt-4 pt-4 border-t border-slate-100 space-y-3 animate-in slide-in-from-top-2 fade-in duration-200">
                     {category.children.map(child => (
@@ -205,7 +257,9 @@ function BudgetCategoryRow({ category, currency }: { category: CategoryItem, cur
 }
 
 function BudgetSubCategoryRow({ category, currency }: { category: CategoryItem, currency: string }) {
+    const router = useRouter()
     const [isEditing, setIsEditing] = useState(false)
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
     const [loading, setLoading] = useState(false)
 
     async function handleSave(e: React.FormEvent<HTMLFormElement>) {
@@ -217,12 +271,32 @@ function BudgetSubCategoryRow({ category, currency }: { category: CategoryItem, 
         await updateCategory(formData)
         setLoading(false)
         setIsEditing(false)
+        router.refresh()
     }
 
     async function handleDelete() {
-        if (!confirm('¿Eliminar esta subcategoría?')) return
         setLoading(true)
-        await deleteCategory(category.id)
+        const res = await deleteCategory(category.id)
+        if (res?.error) {
+            alert(res.error)
+            setLoading(false)
+        } else {
+            router.refresh()
+        }
+    }
+
+    if (showDeleteConfirm) {
+        return (
+            <div className="bg-red-50 p-3 rounded-xl border border-red-100 ml-2 animate-in fade-in">
+                <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-bold text-red-700">¿Eliminar subcategoría?</span>
+                </div>
+                <div className="flex gap-2">
+                    <button onClick={() => setShowDeleteConfirm(false)} className="text-xs px-3 py-1 bg-white rounded-lg border text-slate-500">No</button>
+                    <button onClick={handleDelete} className="text-xs px-3 py-1 bg-red-500 text-white rounded-lg font-bold">Sí, eliminar</button>
+                </div>
+            </div>
+        )
     }
 
     if (isEditing) {
@@ -239,7 +313,7 @@ function BudgetSubCategoryRow({ category, currency }: { category: CategoryItem, 
                         autoFocus
                     />
                 </div>
-                <button type="button" onClick={handleDelete} className="p-1.5 text-red-300 hover:text-red-500">
+                <button type="button" onClick={() => setShowDeleteConfirm(true)} className="p-1.5 text-red-300 hover:text-red-500">
                     <Trash2 className="w-3.5 h-3.5" />
                 </button>
                 <button type="button" onClick={() => setIsEditing(false)} className="p-1.5 text-slate-300 hover:text-slate-500">

@@ -7,6 +7,7 @@ import { cookies } from 'next/headers'
 import { CollaborationManager } from '@/components/Budget/CollaborationManager'
 import { BudgetHeader } from '@/components/Layout/BudgetHeader'
 import { BudgetCategoryList } from '@/components/Budget/BudgetCategoryList'
+import { AddCategoryButton } from '@/components/Budget/AddCategoryButton'
 
 export default async function BudgetPage({ searchParams }: { searchParams: Promise<{ date?: string }> }) {
     const params = await Promise.resolve(searchParams)
@@ -181,15 +182,23 @@ export default async function BudgetPage({ searchParams }: { searchParams: Promi
 
             <main className="px-6 mt-6 space-y-6">
 
+
                 <div className="flex justify-between items-center mb-2">
                     <h1 className="text-2xl font-bold text-slate-800 tracking-tight">Presupuesto Mensual</h1>
-                    <CollaborationManager
-                        members={formattedMembers || []}
-                        invitations={invitations || []}
-                        budgetId={budget.id}
-                        currentUserId={user.id}
-                        variant="compact"
-                    />
+                    <div className="flex gap-2">
+                        <CollaborationManager
+                            members={formattedMembers || []}
+                            invitations={invitations || []}
+                            budgetId={budget.id}
+                            currentUserId={user.id}
+                            variant="compact"
+                        />
+                        <AddCategoryButton
+                            budgetId={budget.id}
+                            currency={budget.currency}
+                            categories={allCategories || []}
+                        />
+                    </div>
                 </div>
 
                 {/* Overall Status */}
@@ -216,7 +225,7 @@ export default async function BudgetPage({ searchParams }: { searchParams: Promi
                 </div>
 
                 {/* New Hierarchical Category List */}
-                <BudgetCategoryList categories={displayCategories} currency={budget.currency} />
+                <BudgetCategoryList categories={displayCategories} currency={budget.currency} budgetId={budget.id} />
 
             </main>
             <BottomNav />

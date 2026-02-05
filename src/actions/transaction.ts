@@ -52,6 +52,7 @@ export async function addTransaction(formData: FormData) {
 
     revalidatePath('/')
     revalidatePath('/transactions')
+    revalidatePath('/budget')
     redirect('/')
 }
 
@@ -90,6 +91,7 @@ export async function updateTransaction(formData: FormData) {
 
     revalidatePath('/')
     revalidatePath('/transactions')
+    revalidatePath('/budget')
     redirect('/transactions')
 }
 
@@ -107,5 +109,6 @@ export async function deleteTransaction(transactionId: string) {
 
     revalidatePath('/')
     revalidatePath('/transactions')
+    revalidatePath('/budget')
     return { success: true }
 }

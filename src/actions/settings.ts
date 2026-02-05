@@ -24,6 +24,7 @@ export async function updateBudgetSettings(formData: FormData) {
     }
 
     revalidatePath('/settings')
+    revalidatePath('/budget')
     revalidatePath('/')
     return { success: true }
 }
@@ -51,6 +52,7 @@ export async function updateCategory(formData: FormData) {
     }
 
     revalidatePath('/settings')
+    revalidatePath('/budget')
     return { success: true }
 }
 
@@ -64,10 +66,11 @@ export async function deleteCategory(categoryId: string) {
 
     if (error) {
         console.error('Delete category error:', error)
-        return { error: 'Error al eliminar categoría' }
+        return { error: `Error: ${error.message} (${error.code})` }
     }
 
     revalidatePath('/settings')
+    revalidatePath('/budget')
     return { success: true }
 }
 
@@ -100,5 +103,6 @@ export async function createCategory(formData: FormData) {
     }
 
     revalidatePath('/settings')
+    revalidatePath('/budget')
     return { success: true }
 }
