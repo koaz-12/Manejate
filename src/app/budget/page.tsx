@@ -4,7 +4,7 @@ import { BottomNav } from '@/components/Layout/BottomNav'
 import { MonthSelector } from '@/components/Dashboard/MonthSelector'
 import { AlertCircle, CheckCircle2, Users } from 'lucide-react'
 import { cookies } from 'next/headers'
-import { InviteLink } from '@/components/Settings/InviteLink'
+import { CollaborationManager } from '@/components/Budget/CollaborationManager'
 import { BudgetHeader } from '@/components/Layout/BudgetHeader'
 
 export default async function BudgetPage({ searchParams }: { searchParams: Promise<{ date?: string }> }) {
@@ -17,15 +17,35 @@ export default async function BudgetPage({ searchParams }: { searchParams: Promi
     const cookieStore = await cookies()
     const selectedId = cookieStore.get('selected_budget')?.value
 
-    const { data: members } = await supabase
+    const { data: userMemberships } = await supabase
         .from('budget_members')
         .select('budgets(*)')
         .eq('user_id', user.id)
 
-    const budgets = members?.map(m => m.budgets as any) || []
+    const budgets = userMemberships?.map(m => m.budgets as any) || []
     let budget = budgets.find((b: any) => b?.id === selectedId) || budgets[0]
 
     if (!budget) return <div className="p-6">No tienes presupuestos.</div>
+
+    // Fetch Full Members List for Collaboration Manager
+    const { data: fullMembers } = await supabase
+        .from('budget_members')
+        .select('user_id, role, profiles(display_name, email, avatar_url)')
+        .eq('budget_id', budget.id)
+
+    const formattedMembers = fullMembers?.map((m: any) => ({
+        ...m,
+        profiles: Array.isArray(m.profiles) ? m.profiles[0] : m.profiles
+    }))
+
+    // Fetch Active Invitations
+    const { data: invitations } = await supabase
+        .from('invitations')
+        .select('*')
+        .eq('budget_id', budget.id)
+        .gte('expires_at', new Date().toISOString())
+
+    // Fetch User Profile for Header
 
     // Fetch User Profile for Header
     const { data: profile } = await supabase
@@ -168,22 +188,12 @@ export default async function BudgetPage({ searchParams }: { searchParams: Promi
                 </div>
 
                 {/* Collaboration Shortcuts */}
-                <section className="bg-slate-900 rounded-3xl p-6 text-white shadow-lg overflow-hidden relative">
-                    <div className="relative z-10">
-                        <div className="flex items-center gap-2 mb-3">
-                            <Users className="w-5 h-5 text-indigo-400" />
-                            <h2 className="text-lg font-bold">Colaboradores</h2>
-                        </div>
-                        <p className="text-slate-400 text-sm mb-4">
-                            ¡Invita a tu equipo! Decide si pueden editar o solo ver.
-                        </p>
-                        {/* We use the same component but maybe we need to style it differently? 
-                            The component has hardcoded backgrounds. Let's wrap it or accept variants later.
-                            For now, it works fine inside this dark card. 
-                        */}
-                        <InviteLink budgetId={budget.id} />
-                    </div>
-                </section>
+                <CollaborationManager
+                    members={formattedMembers || []}
+                    invitations={invitations || []}
+                    budgetId={budget.id}
+                    currentUserId={user.id}
+                />
 
             </main>
             <BottomNav />
