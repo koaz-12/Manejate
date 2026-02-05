@@ -63,7 +63,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
   // Fetch Profile Name
   const { data: profile } = await supabase
     .from('profiles')
-    .select('display_name')
+    .select('display_name, avatar_url')
     .eq('id', user.id)
     .single();
 
@@ -179,7 +179,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
       <BudgetHeader
         budgets={budgets}
         currentBudgetId={budget.id}
-        displayName={displayName}
+        userAvatar={profile?.avatar_url} // Assuming avatar_url exists in profile fetch
       />
 
       {/* Month Navigation */}

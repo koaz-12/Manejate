@@ -4,6 +4,7 @@ import { BottomNav } from '@/components/Layout/BottomNav'
 import { Plus, Target, TrendingUp } from 'lucide-react'
 import Link from 'next/link'
 import { GoalCard } from '@/components/Goals/GoalCard'
+import { BudgetHeader } from '@/components/Layout/BudgetHeader'
 
 export default async function GoalsPage() {
     const supabase = await createClient()
@@ -39,6 +40,13 @@ export default async function GoalsPage() {
         budget = budgets[0];
     }
 
+    // Fetch User Profile for Header
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('avatar_url')
+        .eq('id', user.id)
+        .single();
+
     // Fetch Goals
     const { data: goals } = await supabase
         .from('savings_goals')
@@ -50,14 +58,21 @@ export default async function GoalsPage() {
 
     return (
         <div className="min-h-screen bg-slate-50 pb-24">
-            <header className="px-5 py-3 bg-white sticky top-0 z-40 shadow-[0_1px_3px_0_rgba(0,0,0,0.05)] flex justify-between items-center border-b border-slate-50">
-                <h1 className="text-lg font-bold text-slate-800 tracking-tight">Metas de Ahorro</h1>
-                <Link href="/goals/new" className="text-[var(--primary)] bg-emerald-50 p-1.5 rounded-full hover:bg-emerald-100 transition-colors">
-                    <Plus className="w-5 h-5" />
-                </Link>
-            </header>
+            <BudgetHeader
+                budgets={budgets}
+                currentBudgetId={budget.id}
+                userAvatar={profile?.avatar_url}
+            />
 
             <main className="px-6 mt-6 space-y-6">
+
+                <div className="flex justify-between items-center">
+                    <h1 className="text-2xl font-bold text-slate-800 tracking-tight">Metas de Ahorro</h1>
+                    <Link href="/goals/new" className="text-white bg-slate-900 px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 shadow-lg shadow-slate-200 hover:bg-slate-800 transition-all active:scale-95">
+                        <Plus className="w-4 h-4" />
+                        Nueva Meta
+                    </Link>
+                </div>
 
                 {/* Total Saved Summary Card */}
                 <div className="bg-[#52D1DC] p-6 rounded-3xl shadow-lg text-white relative overflow-hidden">
