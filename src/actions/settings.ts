@@ -54,6 +54,23 @@ export async function updateCategory(formData: FormData) {
     return { success: true }
 }
 
+export async function deleteCategory(categoryId: string) {
+    const supabase = await createClient()
+
+    const { error } = await supabase
+        .from('categories')
+        .delete()
+        .eq('id', categoryId)
+
+    if (error) {
+        console.error('Delete category error:', error)
+        return { error: 'Error al eliminar categoría' }
+    }
+
+    revalidatePath('/settings')
+    return { success: true }
+}
+
 export async function createCategory(formData: FormData) {
     const supabase = await createClient()
 
