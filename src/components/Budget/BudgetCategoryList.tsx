@@ -151,7 +151,7 @@ function BudgetCategoryRow({ category, currency, budgetId }: { category: Categor
     }
 
     const hasChildren = category.children && category.children.length > 0
-    const percent = Math.min((category.spent / category.limit) * 100, 100)
+    const percent = category.limit > 0 ? Math.min((category.spent / category.limit) * 100, 100) : 0
 
     // Status Color
     let statusColor = 'bg-indigo-500' // safe
@@ -259,7 +259,7 @@ function BudgetSubCategoryRow({ category, currency }: { category: CategoryItem, 
         else router.refresh()
     }
 
-    const percent = Math.min((category.spent / category.limit) * 100, 100)
+    const percent = category.limit > 0 ? Math.min((category.spent / category.limit) * 100, 100) : 0
 
     return (
         <div className="p-3 pl-4 flex items-center gap-3 border-b border-slate-100 last:border-0 hover:bg-slate-100 transition-colors group relative">
