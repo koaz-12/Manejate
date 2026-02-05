@@ -20,61 +20,91 @@ interface Props {
     invitations: any[]
     budgetId: string
     currentUserId: string
+    variant?: 'card' | 'compact'
 }
 
-export function CollaborationManager({ members, invitations, budgetId, currentUserId }: Props) {
+export function CollaborationManager({ members, invitations, budgetId, currentUserId, variant = 'card' }: Props) {
     const [isOpen, setIsOpen] = useState(false)
     const [activeTab, setActiveTab] = useState<'members' | 'invite'>('members')
 
     // Derived state
-    const displayMembers = members.slice(0, 4)
-    const remainingCount = Math.max(0, members.length - 4)
+    const displayMembers = members.slice(0, 3)
+    const remainingCount = Math.max(0, members.length - 3)
 
     return (
         <>
-            {/* Summary Card (Trigger) */}
-            <section
-                onClick={() => setIsOpen(true)}
-                className="bg-slate-900 rounded-3xl p-6 text-white shadow-lg overflow-hidden relative cursor-pointer active:scale-95 transition-transform"
-            >
-                <div className="relative z-10 flex justify-between items-center">
-                    <div>
-                        <div className="flex items-center gap-2 mb-3">
-                            <Users className="w-5 h-5 text-indigo-400" />
-                            <h2 className="text-lg font-bold">Colaboradores</h2>
-                        </div>
-                        <p className="text-slate-400 text-sm mb-4">
-                            Gestiona tu equipo y accesos.
-                        </p>
+            {/* Trigger */}
+            {variant === 'compact' ? (
+                <div
+                    onClick={() => setIsOpen(true)}
+                    className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
+                >
+                    <div className="flex items-center -space-x-2">
+                        {displayMembers.map((m) => (
+                            <div key={m.user_id} className="w-8 h-8 rounded-full border-2 border-white bg-slate-200 overflow-hidden shadow-sm">
+                                {m.profiles?.avatar_url ? (
+                                    <img src={m.profiles.avatar_url} alt={m.profiles.display_name || 'User'} className="w-full h-full object-cover" />
+                                ) : (
+                                    <div className="w-full h-full flex items-center justify-center bg-indigo-500 text-white text-[10px] font-bold">
+                                        {m.profiles?.display_name?.[0] || '?'}
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                        {remainingCount > 0 && (
+                            <div className="w-8 h-8 rounded-full border-2 border-white bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-600 shadow-sm">
+                                +{remainingCount}
+                            </div>
+                        )}
+                    </div>
+                    <button className="w-8 h-8 flex items-center justify-center bg-slate-900 text-white rounded-full shadow-md shadow-slate-200 active:scale-95 transition-transform">
+                        <Settings2 className="w-4 h-4" />
+                    </button>
+                </div>
+            ) : (
+                <section
+                    onClick={() => setIsOpen(true)}
+                    className="bg-slate-900 rounded-3xl p-6 text-white shadow-lg overflow-hidden relative cursor-pointer active:scale-95 transition-transform"
+                >
+                    <div className="relative z-10 flex justify-between items-center">
+                        <div>
+                            <div className="flex items-center gap-2 mb-3">
+                                <Users className="w-5 h-5 text-indigo-400" />
+                                <h2 className="text-lg font-bold">Colaboradores</h2>
+                            </div>
+                            <p className="text-slate-400 text-sm mb-4">
+                                Gestiona tu equipo y accesos.
+                            </p>
 
-                        {/* Avatar Pile */}
-                        <div className="flex items-center -space-x-3">
-                            {displayMembers.map((m) => (
-                                <div key={m.user_id} className="w-8 h-8 rounded-full border-2 border-slate-900 bg-slate-800 overflow-hidden">
-                                    {m.profiles?.avatar_url ? (
-                                        <img src={m.profiles.avatar_url} alt={m.profiles.display_name || 'User'} className="w-full h-full object-cover" />
-                                    ) : (
-                                        <div className="w-full h-full flex items-center justify-center bg-indigo-500 text-xs font-bold">
-                                            {m.profiles?.display_name?.[0] || '?'}
-                                        </div>
-                                    )}
+                            {/* Avatar Pile */}
+                            <div className="flex items-center -space-x-3">
+                                {displayMembers.map((m) => (
+                                    <div key={m.user_id} className="w-8 h-8 rounded-full border-2 border-slate-900 bg-slate-800 overflow-hidden">
+                                        {m.profiles?.avatar_url ? (
+                                            <img src={m.profiles.avatar_url} alt={m.profiles.display_name || 'User'} className="w-full h-full object-cover" />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center bg-indigo-500 text-xs font-bold">
+                                                {m.profiles?.display_name?.[0] || '?'}
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                                {remainingCount > 0 && (
+                                    <div className="w-8 h-8 rounded-full border-2 border-slate-900 bg-slate-800 flex items-center justify-center text-xs font-bold text-white">
+                                        +{remainingCount}
+                                    </div>
+                                )}
+                                <div className="ml-4 bg-white/10 p-1.5 rounded-full hover:bg-white/20 transition-colors">
+                                    <Settings2 className="w-4 h-4" />
                                 </div>
-                            ))}
-                            {remainingCount > 0 && (
-                                <div className="w-8 h-8 rounded-full border-2 border-slate-900 bg-slate-800 flex items-center justify-center text-xs font-bold text-white">
-                                    +{remainingCount}
-                                </div>
-                            )}
-                            <div className="ml-4 bg-white/10 p-1.5 rounded-full hover:bg-white/20 transition-colors">
-                                <Settings2 className="w-4 h-4" />
                             </div>
                         </div>
                     </div>
-                </div>
 
-                {/* Decorative */}
-                <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/20 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2"></div>
-            </section>
+                    {/* Decorative */}
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/20 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2"></div>
+                </section>
+            )}
 
             {/* Modal */}
             {isOpen && (
@@ -103,8 +133,8 @@ export function CollaborationManager({ members, invitations, budgetId, currentUs
                             <button
                                 onClick={() => setActiveTab('members')}
                                 className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-bold rounded-lg transition-all ${activeTab === 'members'
-                                        ? 'bg-white text-slate-800 shadow-sm'
-                                        : 'text-slate-400 hover:text-slate-600'
+                                    ? 'bg-white text-slate-800 shadow-sm'
+                                    : 'text-slate-400 hover:text-slate-600'
                                     }`}
                             >
                                 <Users className="w-4 h-4" />
@@ -113,8 +143,8 @@ export function CollaborationManager({ members, invitations, budgetId, currentUs
                             <button
                                 onClick={() => setActiveTab('invite')}
                                 className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-bold rounded-lg transition-all ${activeTab === 'invite'
-                                        ? 'bg-white text-indigo-600 shadow-sm'
-                                        : 'text-slate-400 hover:text-slate-600'
+                                    ? 'bg-white text-indigo-600 shadow-sm'
+                                    : 'text-slate-400 hover:text-slate-600'
                                     }`}
                             >
                                 <UserPlus className="w-4 h-4" />

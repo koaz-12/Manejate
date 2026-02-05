@@ -117,8 +117,15 @@ export default async function BudgetPage({ searchParams }: { searchParams: Promi
 
             <main className="px-6 mt-6 space-y-6">
 
-                <div className="mb-2">
+                <div className="flex justify-between items-center mb-2">
                     <h1 className="text-2xl font-bold text-slate-800 tracking-tight">Presupuesto Mensual</h1>
+                    <CollaborationManager
+                        members={formattedMembers || []}
+                        invitations={invitations || []}
+                        budgetId={budget.id}
+                        currentUserId={user.id}
+                        variant="compact"
+                    />
                 </div>
 
                 {/* Overall Status */}
@@ -187,13 +194,7 @@ export default async function BudgetPage({ searchParams }: { searchParams: Promi
                     )}
                 </div>
 
-                {/* Collaboration Shortcuts */}
-                <CollaborationManager
-                    members={formattedMembers || []}
-                    invitations={invitations || []}
-                    budgetId={budget.id}
-                    currentUserId={user.id}
-                />
+                {/* Collaboration Shortcuts - Moved to Header */}
 
             </main>
             <BottomNav />
