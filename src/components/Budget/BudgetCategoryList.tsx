@@ -120,7 +120,7 @@ function FixedCategoryCard({ category, currency, budgetId }: { category: Categor
 
                 <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-center mb-1">
-                        <h4 className="font-bold text-slate-800 truncate pr-6">{category.name}</h4>
+                        <h4 className="font-bold text-slate-800 truncate">{category.name}</h4>
                         {isPaid ? (
                             <span className="text-[10px] font-bold bg-green-100 text-green-700 px-2 py-0.5 rounded-full shrink-0">PAGADO</span>
                         ) : (
@@ -160,14 +160,13 @@ function FixedCategoryCard({ category, currency, budgetId }: { category: Categor
                     </div>
                 )}
 
-                {/* Delete Button - Always visible on mobile, hover on desktop */}
-                {/* Positioned absolute top-right but outside typical content flow */}
+                {/* Delete Button - Flex positioning */}
                 <button
                     onClick={handleDelete}
-                    className="absolute top-2 right-2 p-1.5 text-red-300 hover:text-red-500 hover:bg-red-50 rounded-full transition-all lg:opacity-0 lg:group-hover:opacity-100"
+                    className="p-2 text-red-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all shrink-0 opacity-100 lg:opacity-0 lg:group-hover:opacity-100"
                     title="Eliminar"
                 >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="w-5 h-5" />
                 </button>
             </div>
 
@@ -248,7 +247,7 @@ function BudgetCategoryRow({ category, currency, budgetId }: { category: Categor
 
                 <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-center mb-1">
-                        <h4 className="font-extrabold text-slate-800 text-lg truncate leading-tight pr-6">{category.name}</h4>
+                        <h4 className="font-extrabold text-slate-800 text-lg truncate leading-tight">{category.name}</h4>
                         <span className={`text-xs font-bold px-2 py-0.5 rounded-md ${percent >= 100 ? 'bg-red-100 text-red-600' : 'bg-slate-100 text-slate-500'}`}>
                             {Math.round(percent)}%
                         </span>
@@ -278,13 +277,13 @@ function BudgetCategoryRow({ category, currency, budgetId }: { category: Categor
                     </div>
                 )}
 
-                {/* Delete Action (Always visible on mobile, hover on desktop) */}
+                {/* Delete Action (Flex positioning) */}
                 <button
                     onClick={handleDelete}
-                    className="absolute top-2 right-2 p-1.5 text-red-300 hover:text-red-500 hover:bg-red-50 rounded-full transition-all lg:opacity-0 lg:group-hover:opacity-100"
+                    className="p-2 text-red-300 hover:text-red-500 hover:bg-red-50 rounded-full transition-all shrink-0 opacity-100 lg:opacity-0 lg:group-hover:opacity-100"
                     title="Eliminar Categoría"
                 >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="w-5 h-5" />
                 </button>
             </div>
 
