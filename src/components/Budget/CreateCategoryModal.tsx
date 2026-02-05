@@ -20,6 +20,13 @@ export function CreateCategoryModal({ budgetId, parentId = null, categories = []
     const [limitValue, setLimitValue] = useState('')
     const [type, setType] = useState<'main' | 'sub'>(isSub ? 'sub' : 'main')
     const [selectedParent, setSelectedParent] = useState(parentId || '')
+    const [icon, setIcon] = useState(isSub ? '🔖' : '🆕')
+
+    const PRESET_ICONS = [
+        '🏠', '🍔', '🛒', '🚗', '⛽', '💡', '📱', '📡',
+        '💊', '🏋️', '🎬', '☕', '✈️', '🐶', '🎓', '📚',
+        '💸', '🏦', '🎁', '🔧', '💇', '👗', '💳', '👶'
+    ]
 
     // Filter only potential parents (roots)
     const parentOptions = categories.filter(c => !c.parent_id)
@@ -42,6 +49,7 @@ export function CreateCategoryModal({ budgetId, parentId = null, categories = []
 
         formData.append('budgetId', budgetId)
         formData.append('type', 'variable')
+        formData.append('icon', icon)
 
         if (type === 'sub') {
             if (!selectedParent) {
@@ -66,7 +74,7 @@ export function CreateCategoryModal({ budgetId, parentId = null, categories = []
 
     return (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 animate-in fade-in">
-            <div className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-xl space-y-6">
+            <div className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-xl space-y-6 max-h-[90vh] overflow-y-auto custom-scrollbar">
                 <div className="flex justify-between items-center">
                     <h3 className="text-xl font-bold text-slate-800">
                         {type === 'sub' ? 'Nueva Subcategoría' : 'Nueva Categoría'}
@@ -116,25 +124,42 @@ export function CreateCategoryModal({ budgetId, parentId = null, categories = []
                         </div>
                     )}
 
-                    <div className="flex gap-4 items-start">
-                        <div className="w-14 h-14 rounded-2xl bg-indigo-50 flex items-center justify-center text-3xl border-2 border-indigo-100 shrink-0">
+                    <div className="space-y-4">
+                        {/* Name Input */}
+                        <div>
+                            <label className="text-xs font-bold text-slate-400 uppercase block mb-1">Nombre</label>
                             <input
-                                name="icon"
-                                defaultValue={type === 'sub' ? '🔖' : '🆕'}
-                                className="w-full h-full bg-transparent text-center outline-none cursor-pointer"
-                                title="Cambiar Icono"
+                                name="name"
+                                placeholder={type === 'sub' ? "Ej: Supermercado" : "Ej: Comida"}
+                                className="w-full font-bold text-lg text-slate-800 border-b-2 border-slate-100 focus:border-indigo-500 outline-none py-1 placeholder:text-slate-300 transition-colors"
+                                autoFocus
+                                required
                             />
                         </div>
-                        <div className="space-y-4 flex-1">
-                            <div>
-                                <label className="text-xs font-bold text-slate-400 uppercase block mb-1">Nombre</label>
-                                <input
-                                    name="name"
-                                    placeholder={type === 'sub' ? "Ej: Supermercado" : "Ej: Comida"}
-                                    className="w-full font-bold text-lg text-slate-800 border-b-2 border-slate-100 focus:border-indigo-500 outline-none py-1 placeholder:text-slate-300 transition-colors"
-                                    autoFocus
-                                    required
-                                />
+
+                        {/* Icon Picker */}
+                        <div>
+                            <label className="text-xs font-bold text-slate-400 uppercase block mb-2">Icono</label>
+                            <div className="flex gap-3 items-start">
+                                <div className="w-14 h-14 rounded-2xl bg-indigo-50 flex items-center justify-center text-3xl border-2 border-indigo-100 shrink-0 relative">
+                                    {icon}
+                                    <input type="hidden" name="icon" value={icon} />
+                                </div>
+
+                                <div className="flex-1">
+                                    <div className="grid grid-cols-6 gap-2">
+                                        {PRESET_ICONS.map(i => (
+                                            <button
+                                                key={i}
+                                                type="button"
+                                                onClick={() => setIcon(i)}
+                                                className={`aspect-square flex items-center justify-center text-lg rounded-lg hover:bg-slate-100 hover:scale-110 transition-all ${icon === i ? 'bg-indigo-100 ring-2 ring-indigo-200' : 'bg-slate-50'}`}
+                                            >
+                                                {i}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
