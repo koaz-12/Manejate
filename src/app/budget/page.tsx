@@ -5,6 +5,7 @@ import { MonthSelector } from '@/components/Dashboard/MonthSelector'
 import { AlertCircle, CheckCircle2, Users } from 'lucide-react'
 import { cookies } from 'next/headers'
 import { InviteLink } from '@/components/Settings/InviteLink'
+import { BudgetHeader } from '@/components/Layout/BudgetHeader'
 
 export default async function BudgetPage({ searchParams }: { searchParams: Promise<{ date?: string }> }) {
     const params = await Promise.resolve(searchParams)
@@ -25,6 +26,13 @@ export default async function BudgetPage({ searchParams }: { searchParams: Promi
     let budget = budgets.find((b: any) => b?.id === selectedId) || budgets[0]
 
     if (!budget) return <div className="p-6">No tienes presupuestos.</div>
+
+    // Fetch User Profile for Header
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('avatar_url')
+        .eq('id', user.id)
+        .single();
 
     // 2. Date Logic
     const cutoffDay = budget.cutoff_day || 1
@@ -79,13 +87,19 @@ export default async function BudgetPage({ searchParams }: { searchParams: Promi
 
     return (
         <div className="min-h-screen bg-slate-50 pb-24">
-            <header className="px-5 py-3 bg-white sticky top-0 z-40 shadow-[0_1px_3px_0_rgba(0,0,0,0.05)] border-b border-slate-50">
-                <h1 className="text-lg font-bold text-slate-800 tracking-tight">Presupuesto Mensual</h1>
-            </header>
+            <BudgetHeader
+                budgets={budgets}
+                currentBudgetId={budget.id}
+                userAvatar={profile?.avatar_url}
+            />
 
             <MonthSelector cutoffDay={cutoffDay} />
 
             <main className="px-6 mt-6 space-y-6">
+
+                <div className="mb-2">
+                    <h1 className="text-2xl font-bold text-slate-800 tracking-tight">Presupuesto Mensual</h1>
+                </div>
 
                 {/* Overall Status */}
                 <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
