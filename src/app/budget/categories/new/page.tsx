@@ -5,6 +5,12 @@ import { NewCategoryForm } from '@/components/Budget/NewCategoryForm'
 
 export const dynamic = 'force-dynamic'
 
+import type { Viewport } from 'next'
+
+export const viewport: Viewport = {
+    themeColor: '#eef2ff',
+}
+
 export default async function NewCategoryPage({ searchParams }: { searchParams: Promise<{ parentId?: string }> }) {
     const params = await Promise.resolve(searchParams)
     const supabase = await createClient()
