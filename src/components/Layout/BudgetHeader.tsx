@@ -61,7 +61,7 @@ export function BudgetHeader({ budgets, currentBudgetId, userAvatar }: Props) {
     const currentBudget = budgets.find(b => b.id === currentBudgetId)
 
     return (
-        <header className="px-5 py-3 flex justify-between items-center bg-white/80 backdrop-blur-md sticky top-0 z-40 shadow-sm border-b border-slate-200/50 h-[60px]">
+        <header className="px-5 py-3 flex justify-between items-center bg-white/80 backdrop-blur-md sticky top-0 z-40 shadow-sm border-b border-slate-200/50 h-[60px] pt-[env(safe-area-inset-top)]">
             {/* Left: Budget Switcher */}
             <div className="relative">
                 <button
