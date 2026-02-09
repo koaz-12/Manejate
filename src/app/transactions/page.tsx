@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { cookies } from 'next/headers';
 import { TransactionActions } from '@/components/Transactions/TransactionActions';
 import { BudgetHeader } from '@/components/Layout/BudgetHeader';
+import { TransactionList } from '@/components/Transactions/TransactionList';
 
 
 export default async function TransactionsPage() {
@@ -99,72 +100,11 @@ export default async function TransactionsPage() {
                     </Link>
                 </div>
 
-                {sortedDates.length > 0 ? (
-                    sortedDates.map(date => (
-                        <div key={date}>
-                            <h3 className="text-sm font-bold text-slate-400 mb-3 capitalize">{formatDate(date)}</h3>
-                            <div className="space-y-3">
-                                {groupedTransactions[date]?.map((tx: any) => (
-                                    <div key={tx.id} className="flex items-start bg-white p-3 rounded-2xl shadow-sm border border-slate-100 gap-3">
-                                        <div className="flex flex-col items-center gap-1 mt-1">
-                                            <div className="w-10 h-10 rounded-full bg-slate-50 flex-shrink-0 flex items-center justify-center text-xl">
-                                                {categoriesMap.get(tx.category_id)?.icon || '💸'}
-                                            </div>
-                                            <div className="flex items-center gap-1 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-100 max-w-[48px] justify-center">
-                                                <span className="text-[9px] text-slate-500 font-bold uppercase tracking-wide truncate">
-                                                    {tx.profiles?.display_name?.split(' ')[0] || 'User'}
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <div className="flex-1 min-w-0 flex flex-col gap-1.5">
-                                            <div className="flex flex-col items-start text-left">
-                                                {(() => {
-                                                    const cat = categoriesMap.get(tx.category_id)
-                                                    const parent = cat?.parent_id ? categoriesMap.get(cat.parent_id) : null
-                                                    return parent ? (
-                                                        <div className="flex items-center gap-1 flex-wrap">
-                                                            <p className="font-bold text-slate-900 text-sm leading-tight">
-                                                                {parent.name}
-                                                            </p>
-                                                            <span className="text-slate-300 text-xs">›</span>
-                                                            <p className="text-xs text-slate-500 font-medium">
-                                                                {cat?.name}
-                                                            </p>
-                                                        </div>
-                                                    ) : (
-                                                        <p className="font-bold text-slate-900 text-sm leading-tight">
-                                                            {cat?.name || 'Gasto'}
-                                                        </p>
-                                                    )
-                                                })()}
-                                            </div>
-
-                                            <p className="text-sm text-slate-600 font-medium leading-relaxed whitespace-normal break-words text-left">
-                                                {tx.description || 'Sin descripción'}
-                                            </p>
-
-                                            <div className="flex items-center justify-start pt-1 mt-0.5 border-t border-slate-50 w-full">
-                                                <p className="font-bold text-slate-800 text-lg whitespace-nowrap">
-                                                    {budget.currency} {Number(tx.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                                                </p>
-                                            </div>
-                                        </div>
-                                        <div className="-mr-2 self-start">
-                                            <TransactionActions id={tx.id} />
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    ))
-                ) : (
-                    <div className="p-8 text-center text-slate-500 bg-white rounded-2xl border border-slate-100 border-dashed">
-                        <p>No tienes movimientos aún.</p>
-                        <Link href="/transactions/new" className="text-[var(--primary)] font-bold mt-2 block">
-                            Crear el primero
-                        </Link>
-                    </div>
-                )}
+                <TransactionList
+                    transactions={transactions || []}
+                    categories={categories || []}
+                    currency={budget.currency}
+                />
             </main>
             <BottomNav />
         </div>

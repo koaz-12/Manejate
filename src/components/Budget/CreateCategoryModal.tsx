@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { X, Loader2, Check } from 'lucide-react'
+import { X, Loader2, Check, Tag, Layers, Component, Wallet } from 'lucide-react'
 import { createCategory } from '@/actions/settings'
 
 interface Props {
@@ -20,7 +20,7 @@ export function CreateCategoryModal({ budgetId, parentId = null, categories = []
     const [limitValue, setLimitValue] = useState('')
     const [type, setType] = useState<'main' | 'sub'>(isSub ? 'sub' : 'main')
     const [selectedParent, setSelectedParent] = useState(parentId || '')
-    const [icon, setIcon] = useState(isSub ? '🔖' : '🆕')
+    const [icon, setIcon] = useState(isSub ? '🔖' : '🏠') // Default icon based on type
 
     const PRESET_ICONS = [
         '🏠', '🍔', '🛒', '🚗', '⛽', '💡', '📱', '📡',
@@ -73,120 +73,139 @@ export function CreateCategoryModal({ budgetId, parentId = null, categories = []
     }
 
     return (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 animate-in fade-in">
-            <div className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-xl space-y-6 max-h-[90vh] overflow-y-auto custom-scrollbar">
-                <div className="flex justify-between items-center">
-                    <h3 className="text-xl font-bold text-slate-800">
-                        {type === 'sub' ? 'Nueva Subcategoría' : 'Nueva Categoría'}
-                    </h3>
-                    <button onClick={onClose} className="p-2 bg-slate-100 rounded-full hover:bg-slate-200">
-                        <X className="w-5 h-5 text-slate-500" />
-                    </button>
-                </div>
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+            <div className="bg-white w-full max-w-md rounded-[2rem] shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto custom-scrollbar relative flex flex-col">
 
-                {/* Type Switcher */}
-                {!parentId && (
-                    <div className="flex bg-slate-100 p-1 rounded-xl">
-                        <button
-                            type="button"
-                            onClick={() => setType('main')}
-                            className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${type === 'main' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
-                        >
-                            Principal
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => setType('sub')}
-                            className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${type === 'sub' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
-                        >
-                            Subcategoría
-                        </button>
-                    </div>
-                )}
+                {/* Close Button */}
+                <button
+                    onClick={onClose}
+                    className="absolute top-4 right-4 p-2 bg-white/50 backdrop-blur-sm rounded-full hover:bg-white/80 transition-all z-10 text-slate-500 hover:text-slate-800"
+                >
+                    <X className="w-5 h-5" />
+                </button>
 
-                <form onSubmit={handleCreate} className="space-y-4">
+                <form onSubmit={handleCreate} className="flex flex-col h-full">
 
-                    {/* Parent Selector (Only if Sub) */}
-                    {type === 'sub' && !parentId && (
-                        <div>
-                            <label className="text-xs font-bold text-slate-400 uppercase block mb-1">Pertenece a</label>
-                            <select
-                                value={selectedParent}
-                                onChange={(e) => setSelectedParent(e.target.value)}
-                                className="w-full bg-slate-50 border-b-2 border-slate-200 font-bold text-slate-700 py-2 outline-none focus:border-indigo-500 rounded-t-lg px-2"
-                                required={type === 'sub'}
-                            >
-                                <option value="" disabled>Selecciona una categoría</option>
-                                {parentOptions.map(cat => (
-                                    <option key={cat.id} value={cat.id}>{cat.icon} {cat.name}</option>
-                                ))}
-                            </select>
-                        </div>
-                    )}
+                    {/* Hero Section */}
+                    <div className={`p-8 pb-10 text-center relative ${type === 'main' ? 'bg-gradient-to-br from-indigo-50 to-purple-50' : 'bg-gradient-to-br from-slate-50 to-gray-100'}`}>
 
-                    <div className="space-y-4">
-                        {/* Name Input */}
-                        <div>
-                            <label className="text-xs font-bold text-slate-400 uppercase block mb-1">Nombre</label>
+                        {/* Type Switcher (Pills) */}
+                        {!parentId && (
+                            <div className="flex justify-center mb-6">
+                                <div className="bg-white/60 p-1 rounded-xl inline-flex shadow-sm backdrop-blur-sm border border-white/50">
+                                    <button
+                                        type="button"
+                                        onClick={() => setType('main')}
+                                        className={`flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-lg transition-all ${type === 'main' ? 'bg-white text-indigo-600 shadow-sm scale-105' : 'text-slate-400 hover:text-slate-600'}`}
+                                    >
+                                        <Tag className="w-3.5 h-3.5" />
+                                        Principal
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setType('sub')}
+                                        className={`flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-lg transition-all ${type === 'sub' ? 'bg-white text-slate-700 shadow-sm scale-105' : 'text-slate-400 hover:text-slate-600'}`}
+                                    >
+                                        <Layers className="w-3.5 h-3.5" />
+                                        Subcategoría
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
+                        <label className="text-xs font-bold uppercase tracking-wider text-slate-400/80 mb-2 block flex items-center justify-center gap-1">
+                            {type === 'main' ? <Component className="w-3 h-3" /> : <Layers className="w-3 h-3" />}
+                            Nombre
+                        </label>
+                        <div className="relative w-full">
                             <input
                                 name="name"
-                                placeholder={type === 'sub' ? "Ej: Supermercado" : "Ej: Comida"}
-                                className="w-full font-bold text-lg text-slate-800 border-b-2 border-slate-100 focus:border-indigo-500 outline-none py-1 placeholder:text-slate-300 transition-colors"
-                                autoFocus
                                 required
+                                placeholder={type === 'sub' ? "Ej: Pizza" : "Ej: Comida"}
+                                className="text-5xl font-black text-center w-full bg-transparent outline-none placeholder:text-slate-300/50 text-slate-800"
+                                autoFocus
                             />
+                        </div>
+                    </div>
+
+                    {/* Content Section */}
+                    <div className="p-6 space-y-6 flex-1">
+
+                        {/* Parent Selector (Only if Sub) */}
+                        {type === 'sub' && !parentId && (
+                            <div className="space-y-1">
+                                <label className="text-xs font-bold uppercase tracking-wider text-slate-400 pl-1">Pertenece a</label>
+                                <div className="relative">
+                                    <select
+                                        value={selectedParent}
+                                        onChange={(e) => setSelectedParent(e.target.value)}
+                                        className="w-full pl-4 pr-10 py-3 bg-slate-50 rounded-xl border border-slate-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none font-bold text-slate-700 transition-all appearance-none cursor-pointer"
+                                        required={type === 'sub'}
+                                    >
+                                        <option value="" disabled>Selecciona una categoría padre</option>
+                                        {parentOptions.map(cat => (
+                                            <option key={cat.id} value={cat.id}>{cat.icon} {cat.name}</option>
+                                        ))}
+                                    </select>
+                                    <div className="absolute right-4 top-3.5 text-slate-400 pointer-events-none">
+                                        <Layers className="w-5 h-5" />
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Limit Input */}
+                        <div className="space-y-1">
+                            <label className="text-xs font-bold uppercase tracking-wider text-slate-400 pl-1">Límite Mensual</label>
+                            <div className="relative">
+                                <span className="absolute left-4 top-3.5 text-slate-400 font-bold">{currency === 'USD' ? '$' : currency}</span>
+                                <input
+                                    type="text"
+                                    value={limitValue}
+                                    placeholder="0.00"
+                                    onChange={handleLimitChange}
+                                    className="w-full pl-12 pr-4 py-3 bg-slate-50 rounded-xl border border-slate-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none font-bold text-slate-700 transition-all placeholder:text-slate-300"
+                                    inputMode="decimal"
+                                />
+                                <div className="absolute right-4 top-3.5 text-slate-400 pointer-events-none">
+                                    <Wallet className="w-5 h-5" />
+                                </div>
+                            </div>
                         </div>
 
                         {/* Icon Picker */}
-                        <div>
-                            <label className="text-xs font-bold text-slate-400 uppercase block mb-2">Icono</label>
-                            <div className="flex gap-3 items-start">
-                                <div className="w-14 h-14 rounded-2xl bg-indigo-50 flex items-center justify-center text-3xl border-2 border-indigo-100 shrink-0 relative">
-                                    {icon}
-                                    <input type="hidden" name="icon" value={icon} />
+                        <div className="space-y-2">
+                            <label className="text-xs font-bold uppercase tracking-wider text-slate-400 pl-1">Icono</label>
+                            <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                                <div className="grid grid-cols-6 gap-2 max-h-40 overflow-y-auto custom-scrollbar pr-1">
+                                    {PRESET_ICONS.map(i => (
+                                        <button
+                                            key={i}
+                                            type="button"
+                                            onClick={() => setIcon(i)}
+                                            className={`aspect-square flex items-center justify-center text-xl rounded-xl transition-all hover:scale-110 active:scale-95 ${icon === i ? 'bg-white shadow-md ring-2 ring-indigo-500 scale-110 z-10' : 'hover:bg-white hover:shadow-sm text-slate-500 grayscale opacity-70 hover:grayscale-0 hover:opacity-100'}`}
+                                        >
+                                            {i}
+                                        </button>
+                                    ))}
                                 </div>
-
-                                <div className="flex-1">
-                                    <div className="grid grid-cols-6 gap-2">
-                                        {PRESET_ICONS.map(i => (
-                                            <button
-                                                key={i}
-                                                type="button"
-                                                onClick={() => setIcon(i)}
-                                                className={`aspect-square flex items-center justify-center text-lg rounded-lg hover:bg-slate-100 hover:scale-110 transition-all ${icon === i ? 'bg-indigo-100 ring-2 ring-indigo-200' : 'bg-slate-50'}`}
-                                            >
-                                                {i}
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
+                                <input type="hidden" name="icon" value={icon} />
                             </div>
                         </div>
                     </div>
 
-                    <div>
-                        <label className="text-xs font-bold text-slate-400 uppercase block mb-1">Límite Mensual</label>
-                        <div className="flex items-center gap-2 bg-slate-50 rounded-xl px-4 py-3 border border-slate-200 focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-100 transition-all">
-                            <span className="text-slate-500 font-bold">{currency}</span>
-                            <input
-                                type="text"
-                                value={limitValue}
-                                placeholder="0.00"
-                                onChange={handleLimitChange}
-                                className="w-full bg-transparent font-bold text-xl text-slate-800 outline-none placeholder:text-slate-300"
-                                inputMode="decimal"
-                            />
-                        </div>
+                    {/* Submit Button */}
+                    <div className="p-6 pt-2 bg-white sticky bottom-0 border-t border-slate-50">
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold text-lg hover:bg-slate-800 disabled:opacity-70 flex items-center justify-center gap-2 shadow-xl shadow-slate-200 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                        >
+                            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Check className="w-5 h-5" />}
+                            {type === 'sub' ? 'Crear Subcategoría' : 'Crear Categoría'}
+                        </button>
                     </div>
 
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        className="w-full py-4 bg-indigo-600 text-white rounded-2xl font-bold text-lg hover:bg-indigo-700 disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-indigo-200"
-                    >
-                        {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Check className="w-5 h-5" />}
-                        {type === 'sub' ? 'Crear Subcategoría' : 'Crear Categoría'}
-                    </button>
                 </form>
             </div>
         </div>

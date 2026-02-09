@@ -5,13 +5,9 @@ interface LoginPageProps {
     searchParams: Promise<{ error?: string; message?: string; next?: string }>
 }
 
-export default async function LoginPage({ searchParams }: LoginPageProps) {
-    // Await searchParams as required in Next.js 15+ (though currently 14 compatible too)
-    // Depending on Next.js version, searchParams might be a promise. treating it as object for now based on typical 14 usage.
-    // If working with latest canaries, await might be needed. Safe to treat as object for 14.
-    const params = await Promise.resolve(searchParams);
-    const error = params?.error;
-    const message = params?.message;
+export default async function LoginPage(props: { searchParams: Promise<{ error?: string; message?: string; next?: string }> }) {
+    const searchParams = await props.searchParams
+    const { error, message, next } = searchParams || {}
 
     return (
         <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-slate-50">
@@ -37,9 +33,9 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
                     </div>
                 )}
 
-                <form className="space-y-4">
+                <form className="space-y-4" action={login}>
                     {/* Preserve 'next' param for redirect after auth */}
-                    <input type="hidden" name="next" value={params?.next || '/'} />
+                    <input type="hidden" name="next" value={next || '/'} />
 
                     <div className="space-y-2">
                         <label htmlFor="email" className="text-sm font-medium text-slate-700">Email</label>
@@ -66,7 +62,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
                     </div>
 
                     <div className="pt-4 flex flex-col gap-3">
-                        <button formAction={login} className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 rounded-xl transition-all active:scale-[0.98]">
+                        <button className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 rounded-xl transition-all active:scale-[0.98]">
                             Iniciar Sesión
                         </button>
                         <button formAction={signup} className="w-full bg-white hover:bg-slate-50 text-slate-700 font-bold py-3.5 rounded-xl border border-slate-200 transition-all active:scale-[0.98]">

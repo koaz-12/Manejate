@@ -158,7 +158,7 @@ export default async function BudgetPage({ searchParams }: { searchParams: Promi
     // Let's filter to show only Root Categories that are 'variable' OR have children that are 'variable'?
     // Simple approach: Show all root variable categories for now.
     const displayCategories = rootCategories
-        .filter(c => c.type === 'variable' || c.type === 'fixed')
+        .filter(c => c.type === 'variable' || c.type === 'fixed' || c.type === 'savings')
         .sort((a, b) => b.limit - a.limit)
 
     // Global Totals (based on filtered list + others? No, global status should be REAL total)

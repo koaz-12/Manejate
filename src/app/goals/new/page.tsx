@@ -18,6 +18,14 @@ export default async function NewGoalPage() {
         .eq('user_id', user.id)
         .single()
 
+    // Get User Settings
+    const { data: settings } = await supabase
+        .from('user_settings')
+        .select('value')
+        .eq('user_id', user.id)
+        .eq('key', 'goals.default_initial_deposit')
+        .single()
+
     if (!membership) redirect('/')
 
     return (
@@ -35,7 +43,10 @@ export default async function NewGoalPage() {
                     <p className="text-slate-500 mt-2 text-sm">¿Para qué estás ahorrando?</p>
                 </div>
 
-                <NewGoalForm budgetId={membership.budget_id} />
+                <NewGoalForm
+                    budgetId={membership.budget_id}
+                    defaultCheckInitialDeposit={settings?.value === true}
+                />
             </main>
         </div>
     )

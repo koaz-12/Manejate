@@ -186,7 +186,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
       <MonthSelector cutoffDay={cutoffDay} currentDate={params.date ? new Date(params.date) : new Date()} />
 
       {/* Main Content */}
-      <main className="px-6 space-y-6 mt-4">
+      <main className="px-6 space-y-8 mt-8">
 
         {/* Recurring Alert */}
         {/* {recurringCount > 0 && (
@@ -203,27 +203,20 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
         {chartData.length > 0 ? (
           <ExpenseChart data={chartData} />
         ) : (
-          <div className="bg-white p-8 rounded-2xl border border-slate-100 text-center py-12">
-            <p className="text-slate-400">Aún no tienes gastos este mes.</p>
+          <div className="bg-white p-8 rounded-[2rem] border border-slate-100 text-center py-12 shadow-sm">
+            <p className="text-slate-400 font-medium">Aún no tienes gastos este mes.</p>
           </div>
         )}
 
         {/* Recent Transactions */}
-        <div>
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-bold text-slate-800">Recientes</h2>
-            <Link href="/transactions" className="text-sm text-[var(--primary)] font-semibold">Ver todas</Link>
-          </div>
-
-          {transactions && transactions.length > 0 ? (
-            <RecentTransactions transactions={transactions.slice(0, 5).map((tx: any) => ({
-              ...tx,
-              category: categoriesMap.get(tx.category_id)
-            }))} />
-          ) : (
-            <p className="text-sm text-slate-400">No hay movimientos recientes.</p>
-          )}
-        </div>
+        <RecentTransactions transactions={transactions?.slice(0, 5).map((tx: any) => ({
+          id: tx.id,
+          description: tx.description,
+          amount: tx.amount,
+          date: tx.date,
+          category: categoriesMap.get(tx.category_id),
+          profiles: tx.profiles
+        })) || []} />
       </main>
 
       <BottomNav />

@@ -39,9 +39,24 @@ export function BudgetCategoryList({ categories, currency, budgetId }: Props) {
     // Split Fixed vs Variable
     const variableCats = categories.filter(c => c.type === 'variable')
     const fixedCats = categories.filter(c => c.type === 'fixed')
+    const savingsCats = categories.filter(c => c.type === 'savings')
 
     return (
         <div className="space-y-8">
+
+            {/* 0. Savings Section (New) */}
+            {savingsCats.length > 0 && (
+                <div className="space-y-4">
+                    <h3 className="font-bold text-emerald-700 text-lg flex items-center gap-2">
+                        <span>🐖</span> Ahorros e Inversiones
+                    </h3>
+                    <div className="grid gap-3">
+                        {savingsCats.map(cat => (
+                            <BudgetCategoryRow key={cat.id} category={cat} currency={currency} budgetId={budgetId} />
+                        ))}
+                    </div>
+                </div>
+            )}
 
             {/* 1. Fixed Expenses Section */}
             {fixedCats.length > 0 && (
@@ -209,7 +224,6 @@ function FixedCategoryCard({ category, currency, budgetId }: { category: Categor
 function BudgetCategoryRow({ category, currency, budgetId }: { category: CategoryItem, currency: string, budgetId: string }) {
     const [expanded, setExpanded] = useState(false)
     const [loading, setLoading] = useState(false)
-    const [isCreatingSub, setIsCreatingSub] = useState(false)
     const router = useRouter()
 
     async function handleDelete(e: React.MouseEvent) {
@@ -288,36 +302,19 @@ function BudgetCategoryRow({ category, currency, budgetId }: { category: Categor
             </div>
 
             {/* Subcategories */}
-            {(expanded || isCreatingSub) && (
+            {expanded && (
                 <div className="bg-slate-50/50 border-t border-slate-100">
                     {category.children.map(sub => (
                         <BudgetSubCategoryRow key={sub.id} category={sub} currency={currency} />
                     ))}
 
-                    {/* Add Subcategory Trigger */}
-                    {isCreatingSub && (
-                        <CreateCategoryModal
-                            budgetId={budgetId}
-                            parentId={category.id}
-                            onClose={() => setIsCreatingSub(false)}
-                            currency={currency}
-                            isSub={true}
-                        />
-                    )}
-
-                    {!isCreatingSub && (
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation()
-                                if (!expanded) setExpanded(true)
-                                setIsCreatingSub(true)
-                            }}
-                            className="w-full py-3 text-xs font-bold text-slate-400 hover:text-indigo-600 flex items-center justify-center gap-1 hover:bg-indigo-50/50 transition-colors"
-                        >
-                            <PlusCircle className="w-3 h-3" />
-                            Agregar Subcategoría
-                        </button>
-                    )}
+                    <Link
+                        href={`/budget/categories/new?parentId=${category.id}`}
+                        className="w-full py-3 text-xs font-bold text-slate-400 hover:text-indigo-600 flex items-center justify-center gap-1 hover:bg-indigo-50/50 transition-colors"
+                    >
+                        <PlusCircle className="w-3 h-3" />
+                        Agregar Subcategoría
+                    </Link>
                 </div>
             )}
         </div>

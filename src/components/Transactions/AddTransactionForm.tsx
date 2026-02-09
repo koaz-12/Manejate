@@ -61,16 +61,69 @@ export function AddTransactionForm({ budgetId, categories, currency, initialData
         }
     }, [type, categories])
 
+    // Amount State
+    const [amountValue, setAmountValue] = useState('')
+
+    // Initialize display amount on mount if editing
+    useEffect(() => {
+        if (initialData?.amount) {
+            // Initial format: 1234.56 -> 1,234.56
+            const parts = initialData.amount.toString().split('.')
+            parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+            setAmountValue(parts.join('.'))
+        }
+    }, [initialData])
+
+    const formatNumber = (num: string) => {
+        // Allow empty
+        if (!num) return ''
+
+        // Split decimal
+        const parts = num.split('.')
+
+        // Format integer part with commas
+        parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+
+        // Rejoin (limiting to one decimal point naturally by split)
+        // Note: multiple dots might need handling if user types fast, but simple split handles valid numbers well enough for now
+        // A more robust way:
+        return parts.join('.')
+    }
+
+    const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        // Eliminate invalid chars, allow digits and ONE dot
+        // Simple regex to just allow digits and dot.
+        // But we must remove previous commas first to clean it, then re-format.
+        const val = e.target.value
+
+        // If deleting, just let it update. 
+        // We strip non-numeric/non-dot
+        const raw = val.replace(/[^0-9.]/g, '')
+
+        // Check if multiple dots
+        if ((raw.match(/\./g) || []).length > 1) {
+            return // Ignore invalid input with multiple dots
+        }
+
+        setAmountValue(formatNumber(raw))
+    }
+
     async function handleSubmit(formData: FormData) {
         setLoading(true)
         setError(null)
 
-        const amount = Number(formData.get('amount'))
-        if (amount <= 0) {
+        // Clean amount string for submission
+        const rawAmount = amountValue.replace(/,/g, '')
+        const amount = Number(rawAmount)
+
+        if (amount <= 0 || isNaN(amount)) {
             setError('El monto debe ser mayor a 0')
             setLoading(false)
             return
         }
+
+        // Override formData 'amount' with clean standard number
+        formData.set('amount', rawAmount)
 
         formData.append('budgetId', budgetId)
         formData.append('categoryId', selectedCategory)
@@ -122,16 +175,17 @@ export function AddTransactionForm({ budgetId, categories, currency, initialData
                     <div className="relative inline-flex items-center justify-center">
                         <span className={`text-4xl font-bold absolute -left-6 top-1.5 ${type === 'expense' ? 'text-slate-300' : 'text-emerald-300/50'}`}>$</span>
                         <input
-                            type="number"
-                            name="amount"
-                            step="0.01"
-                            min="0.01"
+                            type="text"
+                            inputMode="decimal"
                             required
-                            defaultValue={initialData?.amount}
                             placeholder="0.00"
+                            value={amountValue}
+                            onChange={handleAmountChange}
                             className={`text-6xl font-black text-center w-full bg-transparent outline-none placeholder:text-slate-200/50 ${type === 'expense' ? 'text-slate-800' : 'text-emerald-500'}`}
                             autoFocus={!initialData}
+                            name="amount_display" // Changed name so it doesn't conflict with final 'amount' if we want clean submission, though we override it manually above.
                         />
+                        {/* We removed hidden input because we override formData in handleSubmit */}
                     </div>
                 </div>
 

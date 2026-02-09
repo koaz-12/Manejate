@@ -75,22 +75,25 @@ export default async function GoalsPage() {
                 </div>
 
                 {/* Total Saved Summary Card */}
-                <div className="bg-[#52D1DC] p-6 rounded-3xl shadow-lg text-white relative overflow-hidden">
-                    {/* Decorative Circles */}
-                    <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/20 rounded-full blur-2xl"></div>
-                    <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full blur-xl"></div>
+                <div className="bg-gradient-to-br from-indigo-600 to-sky-500 p-8 rounded-[2rem] shadow-xl shadow-indigo-200 text-white relative overflow-hidden group">
+                    {/* Decorative Elements */}
+                    <div className="absolute -top-12 -right-12 w-48 h-48 bg-white/20 rounded-full blur-3xl group-hover:scale-110 transition-transform duration-1000"></div>
+                    <div className="absolute bottom-0 left-0 w-32 h-32 bg-indigo-800/20 rounded-full blur-2xl"></div>
 
                     <div className="relative z-10">
-                        <div className="flex items-center gap-2 mb-1 opacity-90">
-                            <Target className="w-5 h-5" />
-                            <span className="text-sm font-medium">Ahorro Total</span>
+                        <div className="flex items-center gap-2 mb-2 opacity-80">
+                            <div className="p-1.5 bg-white/10 rounded-lg backdrop-blur-sm">
+                                <Target className="w-4 h-4 text-white" />
+                            </div>
+                            <span className="text-sm font-bold tracking-wider uppercase">Ahorro Total</span>
                         </div>
-                        <h2 className="text-4xl font-bold mb-2">
-                            {budget.currency === 'USD' ? '$' : budget.currency} {totalSaved.toLocaleString()}
+                        <h2 className="text-5xl font-black mb-3 tracking-tight">
+                            {budget.currency === 'USD' ? '$' : budget.currency} {totalSaved.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </h2>
-                        <p className="text-sm opacity-80">
-                            Has acumulado esto entre todas tus metas.
-                        </p>
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-xs font-medium border border-white/10">
+                            <span>🚀</span>
+                            <span>Sigue así, ¡vas muy bien!</span>
+                        </div>
                     </div>
                 </div>
 
