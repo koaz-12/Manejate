@@ -40,19 +40,30 @@ export function CategoryList({ categories, currency, budgetId }: Props) {
     async function handleCreate(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault()
         setLoading(true)
-        const formData = new FormData(e.currentTarget)
-        formData.append('budgetId', budgetId)
-        formData.append('icon', selectedIcon) // Use state for icon
+        try {
+            const formData = new FormData(e.currentTarget)
+            formData.append('budgetId', budgetId)
+            formData.append('icon', selectedIcon) // Use state for icon
 
-        if (creatingParentId) {
-            formData.append('parentId', creatingParentId)
+            if (creatingParentId) {
+                formData.append('parentId', creatingParentId)
+            }
+
+            const res = await createCategory(formData)
+
+            if (res?.error) {
+                alert(`Error: ${res.error}`)
+            } else {
+                setIsCreating(false)
+                setCreatingParentId(null)
+                setSelectedIcon('🏷️')
+            }
+        } catch (error) {
+            console.error('Error creating category:', error)
+            alert('Ocurrió un error inesperado. Por favor intenta de nuevo.')
+        } finally {
+            setLoading(false)
         }
-
-        await createCategory(formData)
-        setLoading(false)
-        setIsCreating(false)
-        setCreatingParentId(null)
-        setSelectedIcon('🏷️')
     }
 
     const cancelCreation = () => {

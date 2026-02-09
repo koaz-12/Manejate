@@ -30,48 +30,58 @@ export async function updateBudgetSettings(formData: FormData) {
 }
 
 export async function updateCategory(formData: FormData) {
-    const supabase = await createClient()
+    try {
+        const supabase = await createClient()
 
-    const categoryId = formData.get('categoryId') as string
-    const name = formData.get('name') as string
-    const limit = parseFloat(formData.get('limit') as string)
-    const icon = formData.get('icon') as string
+        const categoryId = formData.get('categoryId') as string
+        const name = formData.get('name') as string
+        const limit = parseFloat(formData.get('limit') as string)
+        const icon = formData.get('icon') as string
 
-    const { error } = await supabase
-        .from('categories')
-        .update({
-            name,
-            budget_limit: limit,
-            icon
-        })
-        .eq('id', categoryId)
+        const { error } = await supabase
+            .from('categories')
+            .update({
+                name,
+                budget_limit: limit,
+                icon
+            })
+            .eq('id', categoryId)
 
-    if (error) {
-        console.error('Category update error:', error)
-        return { error: 'Error al actualizar categoría' }
+        if (error) {
+            console.error('Category update error:', error)
+            return { error: 'Error al actualizar categoría' }
+        }
+
+        revalidatePath('/settings')
+        revalidatePath('/budget')
+        return { success: true }
+    } catch (error: any) {
+        console.error('Unexpected error updating category:', error)
+        return { error: error.message || 'Error inesperado al actualizar categoría' }
     }
-
-    revalidatePath('/settings')
-    revalidatePath('/budget')
-    return { success: true }
 }
 
 export async function deleteCategory(categoryId: string) {
-    const supabase = await createClient()
+    try {
+        const supabase = await createClient()
 
-    const { error } = await supabase
-        .from('categories')
-        .delete()
-        .eq('id', categoryId)
+        const { error } = await supabase
+            .from('categories')
+            .delete()
+            .eq('id', categoryId)
 
-    if (error) {
-        console.error('Delete category error:', error)
-        return { error: `Error: ${error.message} (${error.code})` }
+        if (error) {
+            console.error('Delete category error:', error)
+            return { error: `Error: ${error.message} (${error.code})` }
+        }
+
+        revalidatePath('/settings')
+        revalidatePath('/budget')
+        return { success: true }
+    } catch (error: any) {
+        console.error('Unexpected error deleting category:', error)
+        return { error: error.message || 'Error inesperado al eliminar categoría' }
     }
-
-    revalidatePath('/settings')
-    revalidatePath('/budget')
-    return { success: true }
 }
 
 export async function createCategory(formData: FormData) {
@@ -105,9 +115,10 @@ export async function createCategory(formData: FormData) {
 
         revalidatePath('/settings')
         revalidatePath('/budget')
+        // Removed revalidatePath('/') to avoid side effects on home page loops
         return { success: true }
-    } catch (error) {
+    } catch (error: any) {
         console.error('Unexpected error creating category:', error)
-        return { error: 'Error inesperado al crear categoría' }
+        return { error: error.message || 'Error inesperado al crear categoría' }
     }
 }
