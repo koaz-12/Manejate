@@ -46,7 +46,7 @@ export default async function NewCategoryPage({ searchParams }: { searchParams: 
         .neq('type', 'income')
 
     return (
-        <div className="min-h-screen bg-slate-50 p-4 pb-20">
+        <div className="min-h-screen bg-slate-50 sm:p-4 pb-0 sm:pb-20">
             <NewCategoryForm
                 budgetId={budgetId}
                 currency={budget.currency}

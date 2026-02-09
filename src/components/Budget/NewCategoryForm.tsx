@@ -98,13 +98,13 @@ export function NewCategoryForm({ budgetId, parentId = null, categories = [], cu
     }
 
     return (
-        <div className="max-w-md mx-auto relative pt-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="w-full max-w-md mx-auto relative sm:pt-6 animate-in fade-in slide-in-from-bottom-4 duration-500 h-screen sm:h-auto flex flex-col">
 
             <Link href="/budget" className="absolute top-8 left-4 p-2 text-slate-400 hover:text-slate-600 transition-colors z-20">
                 <ArrowLeft className="w-6 h-6" />
             </Link>
 
-            <form onSubmit={(e) => handleCreate(e, false)} className="bg-white rounded-[2.5rem] shadow-xl shadow-slate-200/50 overflow-hidden border border-slate-100 relative">
+            <form onSubmit={(e) => handleCreate(e, false)} className="bg-white sm:rounded-[2.5rem] shadow-none sm:shadow-xl sm:shadow-slate-200/50 overflow-hidden sm:border border-slate-100 relative flex flex-col h-full sm:h-auto">
 
                 {/* Hero Section */}
                 <div className={`p-10 pb-12 text-center relative ${type === 'main' ? 'bg-gradient-to-br from-indigo-50 to-purple-50' : 'bg-gradient-to-br from-slate-50 to-gray-100'}`}>
@@ -156,7 +156,7 @@ export function NewCategoryForm({ budgetId, parentId = null, categories = [], cu
                 </div>
 
                 {/* Content Section */}
-                <div className="p-8 space-y-8 bg-white relative z-10">
+                <div className="p-8 space-y-8 bg-white relative z-10 flex-1 overflow-y-auto">
 
                     {/* Parent Selector (Only if Sub) */}
                     {type === 'sub' && !parentId && (
