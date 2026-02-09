@@ -44,53 +44,56 @@ export function NewCategoryForm({ budgetId, parentId = null, categories = [], cu
 
     async function handleCreate(e: React.FormEvent<HTMLFormElement> | React.MouseEvent<HTMLButtonElement>, shouldKeepOpen: boolean = false) {
         e.preventDefault()
-        if (loading) return
 
-        // Basic Validation
-        if (!name) return
+        try {
+            if (loading) return
 
-        setLoading(true)
-        const formData = new FormData()
-        // Manually build formData since we might be triggered by button click
-        formData.append('name', name)
+            // Basic Validation
+            if (!name) return
 
-        const rawLimit = limitValue.replace(/,/g, '')
-        formData.append('budgetId', budgetId)
-        formData.append('type', 'variable')
-        formData.append('icon', icon)
+            setLoading(true)
+            const formData = new FormData()
+            // Manually build formData since we might be triggered by button click
+            formData.append('name', name)
 
-        if (type === 'sub') {
-            if (!selectedParent) {
-                alert('Selecciona una categoría padre')
-                setLoading(false)
-                return
+            const rawLimit = limitValue.replace(/,/g, '')
+            formData.append('budgetId', budgetId)
+            formData.append('type', 'variable')
+            formData.append('icon', icon)
+
+            if (type === 'sub') {
+                if (!selectedParent) {
+                    alert('Selecciona una categoría padre')
+                    setLoading(false)
+                    return
+                }
+                formData.append('parentId', selectedParent)
             }
-            formData.append('parentId', selectedParent)
-        }
 
-        formData.set('limit', rawLimit)
+            formData.set('limit', rawLimit)
 
-        const res = await createCategory(formData)
+            const res = await createCategory(formData)
 
-        setLoading(false)
+            setLoading(false)
 
-        if (res?.error) {
-            alert(res.error)
-        } else {
-            router.refresh()
-
-            if (shouldKeepOpen) {
-                // Reset form for next entry
-                setName('')
-                setLimitValue('')
-                // Keep type, parent, and maybe icon? Icon might change, but type/parent usually stick for batch entry.
-                // Show a small success feedback?
-                // Ideally toast, but alert is fine for MVP or just visual reset.
-                // Let's scroll to top?
-                window.scrollTo({ top: 0, behavior: 'smooth' })
+            if (res?.error) {
+                alert(res.error)
             } else {
-                router.push('/budget')
+                router.refresh()
+
+                if (shouldKeepOpen) {
+                    // Reset form for next entry
+                    setName('')
+                    setLimitValue('')
+                    window.scrollTo({ top: 0, behavior: 'smooth' })
+                } else {
+                    router.push('/budget')
+                }
             }
+        } catch (error) {
+            console.error('Client error:', error)
+            alert('Ocurrió un error inesperado. Por favor intenta de nuevo.')
+            setLoading(false)
         }
     }
 

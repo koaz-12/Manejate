@@ -75,34 +75,39 @@ export async function deleteCategory(categoryId: string) {
 }
 
 export async function createCategory(formData: FormData) {
-    const supabase = await createClient()
+    try {
+        const supabase = await createClient()
 
-    const budgetId = formData.get('budgetId') as string
-    const name = formData.get('name') as string
-    const type = formData.get('type') as string // 'fixed', 'variable', 'income'
-    const limit = parseFloat(formData.get('limit') as string) || 0
-    const icon = formData.get('icon') as string || '🏷️'
-    const parentId = formData.get('parentId') as string || null
+        const budgetId = formData.get('budgetId') as string
+        const name = formData.get('name') as string
+        const type = formData.get('type') as string // 'fixed', 'variable', 'income'
+        const limit = parseFloat(formData.get('limit') as string) || 0
+        const icon = formData.get('icon') as string || '🏷️'
+        const parentId = formData.get('parentId') as string || null
 
-    if (!budgetId || !name || !type) return { error: 'Missing required fields' }
+        if (!budgetId || !name || !type) return { error: 'Faltan campos requeridos' }
 
-    const { error } = await supabase
-        .from('categories')
-        .insert({
-            budget_id: budgetId,
-            name,
-            type,
-            budget_limit: limit,
-            icon,
-            parent_id: parentId
-        })
+        const { error } = await supabase
+            .from('categories')
+            .insert({
+                budget_id: budgetId,
+                name,
+                type,
+                budget_limit: limit,
+                icon,
+                parent_id: parentId
+            })
 
-    if (error) {
-        console.error('Create category error:', error)
-        return { error: 'Error al crear categoría' }
+        if (error) {
+            console.error('Create category error:', error)
+            return { error: 'Error al crear categoría' }
+        }
+
+        revalidatePath('/settings')
+        revalidatePath('/budget')
+        return { success: true }
+    } catch (error) {
+        console.error('Unexpected error creating category:', error)
+        return { error: 'Error inesperado al crear categoría' }
     }
-
-    revalidatePath('/settings')
-    revalidatePath('/budget')
-    return { success: true }
 }
