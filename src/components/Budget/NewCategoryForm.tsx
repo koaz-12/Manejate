@@ -191,7 +191,7 @@ export function NewCategoryForm({ budgetId, parentId = null, categories = [], cu
                                 value={limitValue}
                                 placeholder="0.00"
                                 onChange={handleLimitChange}
-                                className="w-full pl-10 pr-12 py-4 bg-slate-50 rounded-2xl border border-slate-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none font-bold text-2xl text-slate-800 transition-all placeholder:text-slate-300"
+                                className="w-full pl-20 pr-12 py-4 bg-slate-50 rounded-2xl border border-slate-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none font-bold text-2xl text-slate-800 transition-all placeholder:text-slate-300"
                                 inputMode="decimal"
                             />
                             <div className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none group-focus-within:text-indigo-500 transition-colors">

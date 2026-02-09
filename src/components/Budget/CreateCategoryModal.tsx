@@ -164,7 +164,7 @@ export function CreateCategoryModal({ budgetId, parentId = null, categories = []
                                     value={limitValue}
                                     placeholder="0.00"
                                     onChange={handleLimitChange}
-                                    className="w-full pl-12 pr-4 py-3 bg-slate-50 rounded-xl border border-slate-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none font-bold text-slate-700 transition-all placeholder:text-slate-300"
+                                    className="w-full pl-20 pr-4 py-3 bg-slate-50 rounded-xl border border-slate-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none font-bold text-slate-700 transition-all placeholder:text-slate-300"
                                     inputMode="decimal"
                                 />
                                 <div className="absolute right-4 top-3.5 text-slate-400 pointer-events-none">
