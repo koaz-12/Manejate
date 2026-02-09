@@ -3,6 +3,8 @@ import { redirect } from 'next/navigation'
 import { cookies } from 'next/headers'
 import { NewCategoryForm } from '@/components/Budget/NewCategoryForm'
 
+export const dynamic = 'force-dynamic'
+
 export default async function NewCategoryPage({ searchParams }: { searchParams: Promise<{ parentId?: string }> }) {
     const params = await Promise.resolve(searchParams)
     const supabase = await createClient()
@@ -10,9 +12,20 @@ export default async function NewCategoryPage({ searchParams }: { searchParams: 
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) redirect('/login')
 
-    // Get Budget ID from Cookie
+    // Get Budget ID from Cookie or Fallback
     const cookieStore = await cookies()
-    const budgetId = cookieStore.get('selected_budget')?.value
+    let budgetId = cookieStore.get('selected_budget')?.value
+
+    if (!budgetId) {
+        const { data: membership } = await supabase
+            .from('budget_members')
+            .select('budget_id')
+            .eq('user_id', user.id)
+            .limit(1)
+            .single()
+
+        budgetId = membership?.budget_id
+    }
 
     if (!budgetId) redirect('/')
 
