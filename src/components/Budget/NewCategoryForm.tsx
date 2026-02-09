@@ -42,7 +42,7 @@ export function NewCategoryForm({ budgetId, parentId = null, categories = [], cu
         setLimitValue(formatNumber(raw))
     }
 
-    async function handleCreate(e: React.FormEvent<HTMLFormElement> | React.MouseEvent<HTMLButtonElement>, shouldKeepOpen: boolean = false) {
+    async function handleCreate(e: React.MouseEvent<HTMLButtonElement>, shouldKeepOpen: boolean = false) {
         e.preventDefault()
 
         try {
@@ -104,7 +104,7 @@ export function NewCategoryForm({ budgetId, parentId = null, categories = [], cu
                 <ArrowLeft className="w-6 h-6" />
             </Link>
 
-            <form onSubmit={(e) => handleCreate(e, false)} className="bg-white rounded-[2.5rem] shadow-xl shadow-slate-200/50 overflow-hidden border border-slate-100 relative">
+            <form className="bg-white rounded-[2.5rem] shadow-xl shadow-slate-200/50 overflow-hidden border border-slate-100 relative">
 
                 {/* Hero Section */}
                 <div className={`p-10 pb-12 text-center relative ${type === 'main' ? 'bg-gradient-to-br from-indigo-50 to-purple-50' : 'bg-gradient-to-br from-slate-50 to-gray-100'}`}>
