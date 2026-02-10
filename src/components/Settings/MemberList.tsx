@@ -1,7 +1,7 @@
 'use client'
 
 import { removeMember } from '@/actions/collaboration'
-import { Trash2, Shield, User } from 'lucide-react'
+import { Trash2, Shield, User, LogOut } from 'lucide-react'
 import { useState } from 'react'
 
 type Member = {
@@ -14,11 +14,11 @@ type Member = {
     }
 }
 
-export function MemberList({ members, currentUserId, budgetId }: { members: Member[], currentUserId: string, budgetId: string }) {
+export function MemberList({ members, currentUserId, budgetId, currentUserRole }: { members: Member[], currentUserId: string, budgetId: string, currentUserRole: string }) {
     const [loading, setLoading] = useState<string | null>(null)
 
     async function handleRemove(userId: string) {
-        if (!confirm('¿Estás seguro de eliminar a este miembro?')) return
+        // Confirmations moved to button onClick for specific messages
 
         setLoading(userId)
         await removeMember(budgetId, userId)
@@ -57,13 +57,38 @@ export function MemberList({ members, currentUserId, budgetId }: { members: Memb
                     {/* Simplified: Show trash if NOT them, assuming Admin view. Logic handled in backend too. */}
                     {/* Actually, let's allow removing if I am admin, OR removing myself. */}
 
-                    <button
-                        onClick={() => handleRemove(member.user_id)}
-                        disabled={loading === member.user_id}
-                        className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
-                    >
-                        <Trash2 className="w-4 h-4" />
-                    </button>
+                    {/* Actions Logic:
+                        1. If it's ME: Show "Leave" button.
+                        2. If it's NOT ME and I am ADMIN: Show "Kick" button.
+                        3. Else: Show nothing.
+                     */}
+                    {member.user_id === currentUserId ? (
+                        <button
+                            onClick={() => {
+                                if (confirm('¿Quieres salir de este presupuesto? Perderás acceso a los gastos.')) {
+                                    handleRemove(member.user_id)
+                                }
+                            }}
+                            disabled={loading === member.user_id}
+                            className="p-2 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors disabled:opacity-50"
+                            title="Salir del grupo"
+                        >
+                            <LogOut className="w-4 h-4" />
+                        </button>
+                    ) : currentUserRole === 'admin' ? (
+                        <button
+                            onClick={() => {
+                                if (confirm('¿Eliminar a este usuario del presupuesto?')) {
+                                    handleRemove(member.user_id)
+                                }
+                            }}
+                            disabled={loading === member.user_id}
+                            className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+                            title="Eliminar miembro"
+                        >
+                            <Trash2 className="w-4 h-4" />
+                        </button>
+                    ) : null}
                 </div>
             ))}
         </div>

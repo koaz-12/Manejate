@@ -27,6 +27,9 @@ export default async function BudgetPage({ searchParams }: { searchParams: Promi
     const budgets = userMemberships?.map(m => m.budgets as any) || []
     let budget = budgets.find((b: any) => b?.id === selectedId) || budgets[0]
 
+    const activeMember = userMemberships?.find((m: any) => m.budgets.id === budget?.id)
+    const currentUserRole = activeMember?.role || 'viewer'
+
     if (!budget) return <div className="p-6">No tienes presupuestos.</div>
 
     // Fetch Full Members List for Collaboration Manager
@@ -191,6 +194,7 @@ export default async function BudgetPage({ searchParams }: { searchParams: Promi
                             invitations={invitations || []}
                             budgetId={budget.id}
                             currentUserId={user.id}
+                            currentUserRole={currentUserRole}
                             variant="compact"
                         />
                         <AddCategoryButton

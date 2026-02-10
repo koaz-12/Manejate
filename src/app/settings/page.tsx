@@ -143,7 +143,7 @@ export default async function SettingsPage() {
                     </div>
 
                     <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100">
-                        <MemberList members={formattedMembers || []} currentUserId={user.id} budgetId={budget.id} />
+                        <MemberList members={formattedMembers || []} currentUserId={user.id} budgetId={budget.id} currentUserRole={role} />
                         <PendingInvites invites={invitations || []} />
                     </div>
                 </section>
