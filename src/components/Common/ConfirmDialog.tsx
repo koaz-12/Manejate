@@ -39,15 +39,15 @@ export function ConfirmDialog({
             </div>
 
             {open && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
+                <div className="fixed top-0 left-0 right-0 bottom-0 z-[100] flex items-center justify-center p-4" style={{ margin: 0 }}>
                     {/* Backdrop */}
                     <div
-                        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+                        className="absolute top-0 left-0 right-0 bottom-0 bg-black/40 backdrop-blur-sm"
                         onClick={() => !isPending && setOpen(false)}
                     />
 
                     {/* Dialog */}
-                    <div className="relative bg-white rounded-3xl shadow-2xl max-w-sm w-full p-6 space-y-5 animate-in fade-in zoom-in-95 duration-200">
+                    <div className="relative bg-white rounded-3xl shadow-2xl max-w-sm w-full p-6 space-y-5 animate-in fade-in zoom-in-95 duration-200 mx-auto">
                         <button
                             onClick={() => setOpen(false)}
                             disabled={isPending}

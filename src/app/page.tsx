@@ -1,5 +1,6 @@
 import { BottomNav } from '@/components/Layout/BottomNav';
 import { ExpenseChart } from '@/components/Dashboard/ExpenseChart';
+import { SpendingTrends } from '@/components/Dashboard/SpendingTrends';
 import { SummaryCard } from '@/components/Dashboard/SummaryCard';
 import { CreateBudgetForm } from '@/components/Onboarding/CreateBudgetForm';
 import { BudgetHeader } from '@/components/Layout/BudgetHeader';
@@ -7,6 +8,7 @@ import { RecentTransactions } from '@/components/Dashboard/RecentTransactions';
 import { MonthSelector } from '@/components/Dashboard/MonthSelector';
 import { getActiveBudgetContext } from '@/lib/budget-helpers';
 import { calculatePeriod } from '@/lib/period';
+import { getMonthlyTrends } from '@/lib/trends';
 
 export default async function Home({ searchParams }: { searchParams: Promise<{ date?: string }> }) {
   const params = await searchParams;
@@ -32,7 +34,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
   checkAndGenerateRecurring(budget.id).catch(console.error);
 
   // Parallel data fetching — all at once instead of sequentially
-  const [{ data: transactions }, { data: categories }] = await Promise.all([
+  const [{ data: transactions }, { data: categories }, trendsData] = await Promise.all([
     supabase
       .from('transactions')
       .select('*, profiles(display_name, email)')
@@ -44,6 +46,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
       .from('categories')
       .select('id, name, type, budget_limit, icon')
       .eq('budget_id', budget.id),
+    getMonthlyTrends(budget.id, cutoffDay),
   ]);
 
   // Calculate Spent & Income
@@ -100,6 +103,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
             <p className="text-slate-400 font-medium">Aún no tienes gastos este mes.</p>
           </div>
         )}
+
+        <SpendingTrends data={trendsData} currency={budget?.currency || 'USD'} />
 
         <RecentTransactions transactions={transactions?.slice(0, 5).map((tx: any) => ({
           id: tx.id,
