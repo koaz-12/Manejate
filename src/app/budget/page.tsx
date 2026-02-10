@@ -21,7 +21,7 @@ export default async function BudgetPage({ searchParams }: { searchParams: Promi
 
     const { data: userMemberships } = await supabase
         .from('budget_members')
-        .select('budgets(*)')
+        .select('role, budgets(*)')
         .eq('user_id', user.id)
 
     const budgets = userMemberships?.map(m => m.budgets as any) || []
