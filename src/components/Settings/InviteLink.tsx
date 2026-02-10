@@ -16,8 +16,18 @@ export function InviteLink({ budgetId }: { budgetId: string }) {
         setLoading(false)
 
         if (result?.url) {
-            const origin = process.env.NEXT_PUBLIC_APP_URL || window.location.origin
-            const fullUrl = `${origin}${result.url}`
+            // Smart Protocol:
+            // 1. Try Env Var.
+            // 2. If Env Var is missing OR it is 'localhost' (while we are on prod), fallback to window.location.origin
+            let origin = process.env.NEXT_PUBLIC_APP_URL
+
+            // If Env Var says localhost, but we are NOT on localhost, ignore Env Var
+            if (origin && origin.includes('localhost') && window.location.hostname !== 'localhost') {
+                origin = undefined
+            }
+
+            const finalOrigin = origin || window.location.origin
+            const fullUrl = `${finalOrigin}${result.url}`
             setLink(fullUrl)
         }
     }
