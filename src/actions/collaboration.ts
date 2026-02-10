@@ -90,6 +90,8 @@ export async function joinBudget(token: string) {
     if (joinError) return { error: 'Error al unirte al grupo' }
 
     revalidatePath('/')
+    revalidatePath('/settings')
+    revalidatePath('/budget')
     return { success: true }
 }
 
