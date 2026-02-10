@@ -38,6 +38,9 @@ export default async function BudgetPage({ searchParams }: { searchParams: Promi
         .select('user_id, role, profiles(display_name, email, avatar_url)')
         .eq('budget_id', budget.id)
 
+    // Debugging RLS:
+    console.log('Fetched Members for Budget:', budget.id, fullMembers?.length)
+
     const formattedMembers = fullMembers?.map((m: any) => ({
         ...m,
         profiles: Array.isArray(m.profiles) ? m.profiles[0] : m.profiles

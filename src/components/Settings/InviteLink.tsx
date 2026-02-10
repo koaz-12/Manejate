@@ -16,7 +16,8 @@ export function InviteLink({ budgetId }: { budgetId: string }) {
         setLoading(false)
 
         if (result?.url) {
-            const fullUrl = `${window.location.origin}${result.url}`
+            const origin = process.env.NEXT_PUBLIC_APP_URL || window.location.origin
+            const fullUrl = `${origin}${result.url}`
             setLink(fullUrl)
         }
     }
