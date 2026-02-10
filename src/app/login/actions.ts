@@ -20,8 +20,9 @@ export async function login(formData: FormData) {
         return redirect(`/login?error=${encodeURIComponent(error.message)}`)
     }
 
+    const next = formData.get('next') as string || '/'
     revalidatePath('/', 'layout')
-    redirect('/')
+    redirect(next)
 }
 
 export async function signup(formData: FormData) {
@@ -51,6 +52,7 @@ export async function signup(formData: FormData) {
         return redirect('/login?message=Check your email to confirm your account')
     }
 
+    const next = formData.get('next') as string || '/'
     revalidatePath('/', 'layout')
-    redirect('/')
+    redirect(next)
 }

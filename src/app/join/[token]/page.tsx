@@ -63,7 +63,7 @@ export default async function JoinPage({ params }: Props) {
                         Iniciar Sesión
                     </Link>
                     <Link
-                        href={`/register?next=/join/${token}`}
+                        href={`/login?next=/join/${token}`}
                         className="block w-full bg-white text-slate-900 border border-slate-200 font-bold py-4 rounded-2xl"
                     >
                         Crear Cuenta
