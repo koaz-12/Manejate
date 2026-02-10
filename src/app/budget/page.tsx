@@ -8,6 +8,8 @@ import { CollaborationManager } from '@/components/Budget/CollaborationManager'
 import { BudgetHeader } from '@/components/Layout/BudgetHeader'
 import { BudgetCategoryList } from '@/components/Budget/BudgetCategoryList'
 import { AddCategoryButton } from '@/components/Budget/AddCategoryButton'
+import { Wallet, Plus } from 'lucide-react'
+import Link from 'next/link'
 
 export default async function BudgetPage({ searchParams }: { searchParams: Promise<{ date?: string }> }) {
     const params = await Promise.resolve(searchParams)
@@ -30,7 +32,28 @@ export default async function BudgetPage({ searchParams }: { searchParams: Promi
     const activeMember = userMemberships?.find((m: any) => m.budgets.id === budget?.id)
     const currentUserRole = activeMember?.role || 'viewer'
 
-    if (!budget) return <div className="p-6">No tienes presupuestos.</div>
+    if (!budget) {
+        return (
+            <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6 text-center space-y-6">
+                <div className="bg-emerald-100 text-emerald-600 w-20 h-20 rounded-full flex items-center justify-center animate-bounce">
+                    <Wallet className="w-10 h-10" />
+                </div>
+                <div className="space-y-2">
+                    <h1 className="text-2xl font-bold text-slate-800">¡Empecemos!</h1>
+                    <p className="text-slate-500 max-w-xs mx-auto">
+                        No tienes ningún presupuesto activo. Crea uno para comenzar a tomar el control.
+                    </p>
+                </div>
+                <Link
+                    href="/budgets/new"
+                    className="bg-slate-900 text-white font-bold py-4 px-8 rounded-2xl shadow-xl shadow-slate-200 hover:scale-105 transition-transform flex items-center gap-2"
+                >
+                    <Plus className="w-5 h-5" />
+                    Crear mi primer presupuesto
+                </Link>
+            </div>
+        )
+    }
 
     // Fetch Full Members List for Collaboration Manager
     const { data: fullMembers } = await supabase
