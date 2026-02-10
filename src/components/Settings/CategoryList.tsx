@@ -2,10 +2,9 @@
 
 import { updateCategory, createCategory, deleteCategory } from '@/actions/settings'
 import { useState } from 'react'
-import { Pencil, Check, X, Loader2, Plus, Trash2, AlertTriangle } from 'lucide-react'
+import { Pencil, Check, X, Loader2, Plus, Trash2, Settings2 } from 'lucide-react'
 import { ConfirmDialog } from '@/components/Common/ConfirmDialog'
 
-// Simple Emoji Picker for demonstration (can be expanded)
 const COMMON_ICONS = ['🍔', '🛒', '⛽', '🏠', '💡', '🎬', '💊', '🚌', '✈️', '🎁', '🎓', '👶', '🐾', '💳', '🏦', '💰', '💸', '💼', '📦', '🔹']
 
 interface Category {
@@ -29,11 +28,10 @@ export function CategoryList({ categories, currency, budgetId }: Props) {
     const [loading, setLoading] = useState(false)
     const [selectedIcon, setSelectedIcon] = useState('🏷️')
     const [showIconPicker, setShowIconPicker] = useState(false)
+    const [editMode, setEditMode] = useState(false)
 
-    // Helper to get children
     const getChildren = (parentId: string) => categories.filter(c => c.parent_id === parentId)
 
-    // Group by Type (Top Level Only)
     const incomeCats = categories.filter(c => c.type === 'income' && !c.parent_id)
     const fixedCats = categories.filter(c => c.type === 'fixed' && !c.parent_id)
     const variableCats = categories.filter(c => c.type === 'variable' && !c.parent_id)
@@ -44,7 +42,7 @@ export function CategoryList({ categories, currency, budgetId }: Props) {
         try {
             const formData = new FormData(e.currentTarget)
             formData.append('budgetId', budgetId)
-            formData.append('icon', selectedIcon) // Use state for icon
+            formData.append('icon', selectedIcon)
 
             if (creatingParentId) {
                 formData.append('parentId', creatingParentId)
@@ -76,13 +74,24 @@ export function CategoryList({ categories, currency, budgetId }: Props) {
     return (
         <div className="space-y-6">
 
-            <div className="flex justify-end">
+            {/* Top Actions Row */}
+            <div className="flex justify-between items-center">
+                <button
+                    onClick={() => setEditMode(!editMode)}
+                    className={`flex items-center gap-2 text-sm font-bold px-4 py-2 rounded-xl transition-all ${editMode
+                        ? 'bg-slate-900 text-white'
+                        : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                        }`}
+                >
+                    <Settings2 className="w-4 h-4" />
+                    {editMode ? 'Listo' : 'Administrar'}
+                </button>
                 <button
                     onClick={() => setIsCreating(true)}
                     className="flex items-center gap-2 text-sm font-bold text-[var(--primary)] bg-emerald-50 px-4 py-2 rounded-xl transition-colors hover:bg-emerald-100"
                 >
                     <Plus className="w-4 h-4" />
-                    Nueva Categoría
+                    Nueva
                 </button>
             </div>
 
@@ -131,7 +140,7 @@ export function CategoryList({ categories, currency, budgetId }: Props) {
                                         name="type"
                                         className="flex-1 px-3 py-2 bg-slate-50 rounded-xl border border-slate-200 outline-none focus:border-emerald-500 text-sm text-slate-800"
                                         required
-                                        defaultValue={creatingParentId ? 'variable' : 'variable'}
+                                        defaultValue="variable"
                                     >
                                         <option value="variable">Variables</option>
                                         <option value="fixed">Fijos</option>
@@ -164,10 +173,10 @@ export function CategoryList({ categories, currency, budgetId }: Props) {
                     {incomeCats.length === 0 && <p className="text-sm text-slate-400 px-2 italic">Sin categorías de ingreso.</p>}
                     {incomeCats.map(cat => (
                         <div key={cat.id}>
-                            <CategoryRow category={cat} currency={currency} onAddSub={() => setCreatingParentId(cat.id)} />
+                            <CategoryRow category={cat} currency={currency} onAddSub={() => setCreatingParentId(cat.id)} editMode={editMode} />
                             {getChildren(cat.id).length > 0 && (
                                 <div className="pl-4 mt-2 space-y-2 ml-4 border-l border-slate-100">
-                                    {getChildren(cat.id).map(child => <CategoryRow key={child.id} category={child} currency={currency} isChild />)}
+                                    {getChildren(cat.id).map(child => <CategoryRow key={child.id} category={child} currency={currency} isChild editMode={editMode} />)}
                                 </div>
                             )}
                         </div>
@@ -181,10 +190,10 @@ export function CategoryList({ categories, currency, budgetId }: Props) {
                 <div className="space-y-2">
                     {fixedCats.map(cat => (
                         <div key={cat.id}>
-                            <CategoryRow category={cat} currency={currency} onAddSub={() => setCreatingParentId(cat.id)} />
+                            <CategoryRow category={cat} currency={currency} onAddSub={() => setCreatingParentId(cat.id)} editMode={editMode} />
                             {getChildren(cat.id).length > 0 && (
                                 <div className="pl-4 mt-2 space-y-2 ml-4 border-l border-slate-100">
-                                    {getChildren(cat.id).map(child => <CategoryRow key={child.id} category={child} currency={currency} isChild />)}
+                                    {getChildren(cat.id).map(child => <CategoryRow key={child.id} category={child} currency={currency} isChild editMode={editMode} />)}
                                 </div>
                             )}
                         </div>
@@ -198,10 +207,10 @@ export function CategoryList({ categories, currency, budgetId }: Props) {
                 <div className="space-y-2">
                     {variableCats.map(cat => (
                         <div key={cat.id}>
-                            <CategoryRow category={cat} currency={currency} onAddSub={() => setCreatingParentId(cat.id)} />
+                            <CategoryRow category={cat} currency={currency} onAddSub={() => setCreatingParentId(cat.id)} editMode={editMode} />
                             {getChildren(cat.id).length > 0 && (
                                 <div className="pl-4 mt-2 space-y-2 ml-4 border-l border-slate-100">
-                                    {getChildren(cat.id).map(child => <CategoryRow key={child.id} category={child} currency={currency} isChild />)}
+                                    {getChildren(cat.id).map(child => <CategoryRow key={child.id} category={child} currency={currency} isChild editMode={editMode} />)}
                                 </div>
                             )}
                         </div>
@@ -212,9 +221,8 @@ export function CategoryList({ categories, currency, budgetId }: Props) {
     )
 }
 
-function CategoryRow({ category, currency, onAddSub, isChild = false }: { category: Category, currency: string, onAddSub?: () => void, isChild?: boolean }) {
+function CategoryRow({ category, currency, onAddSub, isChild = false, editMode = false }: { category: Category, currency: string, onAddSub?: () => void, isChild?: boolean, editMode?: boolean }) {
     const [isEditing, setIsEditing] = useState(false)
-    const [isDeleting, setIsDeleting] = useState(false)
     const [loading, setLoading] = useState(false)
     const [tempIcon, setTempIcon] = useState(category.icon || '📦')
     const [showIconPicker, setShowIconPicker] = useState(false)
@@ -236,12 +244,11 @@ function CategoryRow({ category, currency, onAddSub, isChild = false }: { catego
     async function handleDelete() {
         setLoading(true)
         await deleteCategory(category.id)
-        // No need to clear state as component unmounts
     }
 
     if (isEditing) {
         return (
-            <form onSubmit={handleSave} className="bg-white p-3 rounded-2xl shadow-sm border border-emerald-200 flex items-center gap-2 relative">
+            <form onSubmit={handleSave} className="bg-white p-3 rounded-2xl shadow-sm border-2 border-emerald-200 flex items-center gap-2 relative animate-in fade-in duration-200">
                 {/* Edit Mode Icon Picker */}
                 <div className="relative">
                     <button
@@ -297,7 +304,7 @@ function CategoryRow({ category, currency, onAddSub, isChild = false }: { catego
     }
 
     return (
-        <div className={`bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex justify-between items-center group relative ${isChild ? 'bg-slate-50/50' : ''}`}>
+        <div className={`bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex justify-between items-center transition-all ${isChild ? 'bg-slate-50/50' : ''}`}>
             <div className="flex items-center gap-3">
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center text-xl border ${isChild ? 'bg-white border-slate-200 scale-90' : 'bg-slate-50 border-slate-100'}`}>
                     {category.icon || '📦'}
@@ -316,24 +323,29 @@ function CategoryRow({ category, currency, onAddSub, isChild = false }: { catego
                     )}
                 </div>
             </div>
-            <div className="flex items-center gap-1">
+
+            {/* Action buttons — only visible in edit mode */}
+            <div className={`flex items-center gap-1 transition-all duration-200 overflow-hidden ${editMode ? 'max-w-[150px] opacity-100' : 'max-w-0 opacity-0'}`}>
                 {onAddSub && (
                     <button onClick={onAddSub} className="p-2 text-slate-300 hover:text-emerald-500 transition-colors" title="Agregar subcategoría">
                         <Plus className="w-4 h-4" />
                     </button>
                 )}
-                <button onClick={() => setIsEditing(true)} className="p-2 text-slate-300 hover:text-[var(--secondary)] transition-colors" title="Editar">
+                <button onClick={() => setIsEditing(true)} className="p-2 text-slate-400 hover:text-indigo-500 transition-colors" title="Editar">
                     <Pencil className="w-4 h-4" />
                 </button>
                 <ConfirmDialog
-                    title="¿Eliminar categoría?"
-                    message={`"${category.name}" y todo su contenido serán eliminados permanentemente.`}
+                    title={isChild ? '¿Eliminar subcategoría?' : '¿Eliminar categoría?'}
+                    message={isChild
+                        ? `La subcategoría "${category.name}" y sus transacciones asociadas serán eliminadas.`
+                        : `"${category.name}", sus subcategorías y todo su contenido serán eliminados permanentemente.`
+                    }
                     confirmLabel="Eliminar"
                     onConfirm={handleDelete}
                     trigger={
                         <button
                             disabled={loading}
-                            className="p-2 text-slate-300 hover:text-red-500 transition-colors"
+                            className="p-2 text-slate-400 hover:text-red-500 transition-colors"
                             title="Eliminar"
                         >
                             {loading ? <Loader2 className="w-4 h-4 animate-spin text-red-500" /> : <Trash2 className="w-4 h-4" />}
