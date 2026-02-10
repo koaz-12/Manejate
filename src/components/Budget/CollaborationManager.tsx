@@ -156,23 +156,24 @@ export function CollaborationManager({ members, invitations, budgetId, currentUs
                         {/* Expandable Body */}
                         <div className="flex-1 overflow-y-auto custom-scrollbar">
                             {activeTab === 'members' ? (
-                                members = { members }
+                                <MemberList
+                                    members={members}
                                     currentUserId={currentUserId}
-                            budgetId={budgetId}
-                            currentUserRole={currentUserRole}
+                                    budgetId={budgetId}
+                                    currentUserRole={currentUserRole}
                                 />
                             ) : (
-                            <div className="space-y-6">
-                                <div className="bg-indigo-50 p-4 rounded-2xl border border-indigo-100 mb-4">
-                                    <h3 className="font-bold text-indigo-900 mb-1">Invitar Colaboradores</h3>
-                                    <p className="text-sm text-indigo-700/80">
-                                        Comparte el enlace con las personas que quieres que se unan a este presupuesto.
-                                    </p>
-                                </div>
-                                <InviteLink budgetId={budgetId} />
+                                <div className="space-y-6">
+                                    <div className="bg-indigo-50 p-4 rounded-2xl border border-indigo-100 mb-4">
+                                        <h3 className="font-bold text-indigo-900 mb-1">Invitar Colaboradores</h3>
+                                        <p className="text-sm text-indigo-700/80">
+                                            Comparte el enlace con las personas que quieres que se unan a este presupuesto.
+                                        </p>
+                                    </div>
+                                    <InviteLink budgetId={budgetId} />
 
-                                {/* Active Invitations List could go here if prop passed */}
-                            </div>
+                                    {/* Active Invitations List could go here if prop passed */}
+                                </div>
                             )}
                         </div>
                     </div>
