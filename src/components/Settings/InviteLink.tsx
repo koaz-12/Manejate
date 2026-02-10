@@ -33,7 +33,6 @@ export function InviteLink({ budgetId }: { budgetId: string }) {
 
     if (link) {
         return (
-        return (
             <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 animate-in fade-in">
                 <div className="flex justify-between items-center mb-2">
                     <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">✨ Link ({role === 'editor' ? 'Editor' : 'Lector'}):</p>
