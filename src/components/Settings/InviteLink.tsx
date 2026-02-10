@@ -60,7 +60,6 @@ export function InviteLink({ budgetId }: { budgetId: string }) {
                 </a>
             </div>
         )
-        )
     }
 
     return (
