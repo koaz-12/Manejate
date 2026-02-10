@@ -1,19 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import { PlusCircle, Info, ChevronRight, ChevronDown, Trash2, CreditCard } from 'lucide-react'
+import { PlusCircle, ChevronDown, Trash2, CreditCard, Pencil, Settings2 } from 'lucide-react'
 import { deleteCategory } from '@/actions/settings'
 import { useRouter } from 'next/navigation'
-
+import { ConfirmDialog } from '@/components/Common/ConfirmDialog'
 import { CreateCategoryModal } from './CreateCategoryModal'
-import { AddCategoryButton } from './AddCategoryButton'
 import Link from 'next/link'
-
-interface TransactionItem {
-    id: string
-    amount: number
-    date: string
-}
 
 interface CategoryItem {
     id: string
@@ -35,8 +28,8 @@ interface Props {
 
 export function BudgetCategoryList({ categories, currency, budgetId }: Props) {
     const [isCreating, setIsCreating] = useState(false)
+    const [editMode, setEditMode] = useState(false)
 
-    // Split Fixed vs Variable
     const variableCats = categories.filter(c => c.type === 'variable')
     const fixedCats = categories.filter(c => c.type === 'fixed')
     const savingsCats = categories.filter(c => c.type === 'savings')
@@ -44,7 +37,21 @@ export function BudgetCategoryList({ categories, currency, budgetId }: Props) {
     return (
         <div className="space-y-8">
 
-            {/* 0. Savings Section (New) */}
+            {/* Edit Mode Toggle */}
+            <div className="flex justify-end">
+                <button
+                    onClick={() => setEditMode(!editMode)}
+                    className={`flex items-center gap-2 text-xs font-bold px-3 py-1.5 rounded-xl transition-all ${editMode
+                        ? 'bg-slate-900 text-white'
+                        : 'bg-slate-100 text-slate-400 hover:bg-slate-200 hover:text-slate-500'
+                        }`}
+                >
+                    <Settings2 className="w-3.5 h-3.5" />
+                    {editMode ? 'Listo' : 'Administrar'}
+                </button>
+            </div>
+
+            {/* Savings Section */}
             {savingsCats.length > 0 && (
                 <div className="space-y-4">
                     <h3 className="font-bold text-emerald-700 text-lg flex items-center gap-2">
@@ -52,28 +59,27 @@ export function BudgetCategoryList({ categories, currency, budgetId }: Props) {
                     </h3>
                     <div className="grid gap-3">
                         {savingsCats.map(cat => (
-                            <BudgetCategoryRow key={cat.id} category={cat} currency={currency} budgetId={budgetId} />
+                            <BudgetCategoryRow key={cat.id} category={cat} currency={currency} budgetId={budgetId} editMode={editMode} />
                         ))}
                     </div>
                 </div>
             )}
 
-            {/* 1. Fixed Expenses Section */}
+            {/* Fixed Expenses Section */}
             {fixedCats.length > 0 && (
                 <div className="space-y-4">
                     <h3 className="font-bold text-slate-800 text-lg flex items-center gap-2">
                         Gastos Fijos
                     </h3>
-
                     <div className="grid gap-3">
                         {fixedCats.map(cat => (
-                            <FixedCategoryCard key={cat.id} category={cat} currency={currency} budgetId={budgetId} />
+                            <FixedCategoryCard key={cat.id} category={cat} currency={currency} budgetId={budgetId} editMode={editMode} />
                         ))}
                     </div>
                 </div>
             )}
 
-            {/* 2. Variable Expenses Section */}
+            {/* Variable Expenses Section */}
             <div className="space-y-4">
                 <div className="flex justify-between items-center">
                     <h3 className="font-bold text-slate-800 text-lg flex items-center gap-2">
@@ -82,11 +88,8 @@ export function BudgetCategoryList({ categories, currency, budgetId }: Props) {
                 </div>
 
                 {variableCats.map(cat => (
-                    <BudgetCategoryRow key={cat.id} category={cat} currency={currency} budgetId={budgetId} />
+                    <BudgetCategoryRow key={cat.id} category={cat} currency={currency} budgetId={budgetId} editMode={editMode} />
                 ))}
-
-                {/* Inline Create removed in favor of header button */}
-                {/* But keeping subcategory creation logic relative to parent row */}
 
                 {categories.length === 0 && (
                     <p className="text-center text-slate-400 py-4">
@@ -98,19 +101,14 @@ export function BudgetCategoryList({ categories, currency, budgetId }: Props) {
     )
 }
 
-function FixedCategoryCard({ category, currency, budgetId }: { category: CategoryItem, currency: string, budgetId: string }) {
+function FixedCategoryCard({ category, currency, budgetId, editMode }: { category: CategoryItem, currency: string, budgetId: string, editMode: boolean }) {
     const isPaid = category.spent >= category.limit
-    const percent = category.limit > 0 ? Math.min((category.spent / category.limit) * 100, 100) : 0
-
-    // Expansion & Subcategory Logic
     const [expanded, setExpanded] = useState(false)
     const [isCreatingSub, setIsCreatingSub] = useState(false)
     const router = useRouter()
     const [loading, setLoading] = useState(false)
 
-    async function handleDelete(e: React.MouseEvent) {
-        e.stopPropagation()
-        if (!confirm('¿Seguro que quieres eliminar esta categoría fija?')) return
+    async function handleDelete() {
         setLoading(true)
         const res = await deleteCategory(category.id)
         if (res?.error) {
@@ -168,28 +166,37 @@ function FixedCategoryCard({ category, currency, budgetId }: { category: Categor
                     </div>
                 </div>
 
-                {/* Chevron for expansion */}
                 {hasChildren && (
                     <div className={`transition-transform duration-300 ${expanded ? 'rotate-180' : ''}`}>
                         <ChevronDown className="w-5 h-5 text-slate-300" />
                     </div>
                 )}
 
-                {/* Delete Button - Flex positioning */}
-                <button
-                    onClick={handleDelete}
-                    className="p-2 text-red-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all shrink-0 opacity-100 lg:opacity-0 lg:group-hover:opacity-100"
-                    title="Eliminar"
-                >
-                    <Trash2 className="w-5 h-5" />
-                </button>
+                {/* Delete — only visible in edit mode */}
+                <div className={`transition-all duration-200 overflow-hidden ${editMode ? 'max-w-[40px] opacity-100' : 'max-w-0 opacity-0'}`} onClick={e => e.stopPropagation()}>
+                    <ConfirmDialog
+                        title="¿Eliminar categoría fija?"
+                        message={`"${category.name}" y todos sus datos serán eliminados permanentemente.`}
+                        confirmLabel="Eliminar"
+                        onConfirm={handleDelete}
+                        trigger={
+                            <button
+                                disabled={loading}
+                                className="p-2 text-red-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                                title="Eliminar"
+                            >
+                                <Trash2 className="w-5 h-5" />
+                            </button>
+                        }
+                    />
+                </div>
             </div>
 
-            {/* Subcategories (Same logic as Variable) */}
+            {/* Subcategories */}
             {(expanded || isCreatingSub) && (
                 <div className="bg-slate-50/50 border-t border-slate-100">
                     {category.children.map(sub => (
-                        <BudgetSubCategoryRow key={sub.id} category={sub} currency={currency} />
+                        <BudgetSubCategoryRow key={sub.id} category={sub} currency={currency} editMode={editMode} />
                     ))}
 
                     {isCreatingSub && (
@@ -221,15 +228,12 @@ function FixedCategoryCard({ category, currency, budgetId }: { category: Categor
     )
 }
 
-function BudgetCategoryRow({ category, currency, budgetId }: { category: CategoryItem, currency: string, budgetId: string }) {
+function BudgetCategoryRow({ category, currency, budgetId, editMode }: { category: CategoryItem, currency: string, budgetId: string, editMode: boolean }) {
     const [expanded, setExpanded] = useState(false)
     const [loading, setLoading] = useState(false)
     const router = useRouter()
 
-    async function handleDelete(e: React.MouseEvent) {
-        e.stopPropagation()
-        if (!confirm('¿Seguro que quieres eliminar esta categoría?')) return
-
+    async function handleDelete() {
         setLoading(true)
         const res = await deleteCategory(category.id)
         if (res?.error) {
@@ -243,14 +247,12 @@ function BudgetCategoryRow({ category, currency, budgetId }: { category: Categor
     const hasChildren = category.children && category.children.length > 0
     const percent = category.limit > 0 ? Math.min((category.spent / category.limit) * 100, 100) : 0
 
-    // Status Color
-    let statusColor = 'bg-indigo-500' // safe
-    if (percent > 80) statusColor = 'bg-amber-500' // warning
-    if (percent >= 100) statusColor = 'bg-red-500' // danger
+    let statusColor = 'bg-indigo-500'
+    if (percent > 80) statusColor = 'bg-amber-500'
+    if (percent >= 100) statusColor = 'bg-red-500'
 
     return (
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden transition-all">
-            {/* Main Row */}
             <div
                 onClick={() => setExpanded(!expanded)}
                 className="p-4 flex items-center gap-4 cursor-pointer hover:bg-slate-50 transition-colors relative group"
@@ -267,7 +269,6 @@ function BudgetCategoryRow({ category, currency, budgetId }: { category: Categor
                         </span>
                     </div>
 
-                    {/* Progress Bar */}
                     <div className="h-2.5 w-full bg-slate-100 rounded-full overflow-hidden mb-1.5">
                         <div
                             className={`h-full rounded-full transition-all duration-500 ${statusColor}`}
@@ -291,21 +292,31 @@ function BudgetCategoryRow({ category, currency, budgetId }: { category: Categor
                     </div>
                 )}
 
-                {/* Delete Action (Flex positioning) */}
-                <button
-                    onClick={handleDelete}
-                    className="p-2 text-red-300 hover:text-red-500 hover:bg-red-50 rounded-full transition-all shrink-0 opacity-100 lg:opacity-0 lg:group-hover:opacity-100"
-                    title="Eliminar Categoría"
-                >
-                    <Trash2 className="w-5 h-5" />
-                </button>
+                {/* Delete — only visible in edit mode */}
+                <div className={`transition-all duration-200 overflow-hidden ${editMode ? 'max-w-[40px] opacity-100' : 'max-w-0 opacity-0'}`} onClick={e => e.stopPropagation()}>
+                    <ConfirmDialog
+                        title="¿Eliminar categoría?"
+                        message={`"${category.name}", sus subcategorías y transacciones serán eliminadas permanentemente.`}
+                        confirmLabel="Eliminar"
+                        onConfirm={handleDelete}
+                        trigger={
+                            <button
+                                disabled={loading}
+                                className="p-2 text-red-300 hover:text-red-500 hover:bg-red-50 rounded-full transition-all"
+                                title="Eliminar"
+                            >
+                                <Trash2 className="w-5 h-5" />
+                            </button>
+                        }
+                    />
+                </div>
             </div>
 
             {/* Subcategories */}
             {expanded && (
                 <div className="bg-slate-50/50 border-t border-slate-100">
                     {category.children.map(sub => (
-                        <BudgetSubCategoryRow key={sub.id} category={sub} currency={currency} />
+                        <BudgetSubCategoryRow key={sub.id} category={sub} currency={currency} editMode={editMode} />
                     ))}
 
                     <Link
@@ -321,12 +332,12 @@ function BudgetCategoryRow({ category, currency, budgetId }: { category: Categor
     )
 }
 
-function BudgetSubCategoryRow({ category, currency }: { category: CategoryItem, currency: string }) {
+function BudgetSubCategoryRow({ category, currency, editMode }: { category: CategoryItem, currency: string, editMode: boolean }) {
     const router = useRouter()
+    const [loading, setLoading] = useState(false)
 
-    async function handleDeleteSub(e: React.MouseEvent) {
-        e.stopPropagation()
-        if (!confirm('¿Eliminar subcategoría?')) return
+    async function handleDeleteSub() {
+        setLoading(true)
         const res = await deleteCategory(category.id)
         if (res?.error) alert(res.error)
         else router.refresh()
@@ -358,12 +369,23 @@ function BudgetSubCategoryRow({ category, currency }: { category: CategoryItem, 
                 </div>
             </div>
 
-            <button
-                onClick={handleDeleteSub}
-                className="p-1.5 text-red-300 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all opacity-100 lg:opacity-0 lg:group-hover:opacity-100"
-            >
-                <Trash2 className="w-3 h-3" />
-            </button>
+            {/* Delete — only visible in edit mode */}
+            <div className={`transition-all duration-200 overflow-hidden ${editMode ? 'max-w-[32px] opacity-100' : 'max-w-0 opacity-0'}`}>
+                <ConfirmDialog
+                    title="¿Eliminar subcategoría?"
+                    message={`"${category.name}" y sus transacciones serán eliminadas.`}
+                    confirmLabel="Eliminar"
+                    onConfirm={handleDeleteSub}
+                    trigger={
+                        <button
+                            disabled={loading}
+                            className="p-1.5 text-red-300 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                        >
+                            <Trash2 className="w-3 h-3" />
+                        </button>
+                    }
+                />
+            </div>
         </div>
     )
 }
