@@ -1,9 +1,7 @@
 import { login, signup } from './actions'
 import { Wallet } from 'lucide-react'
-
-interface LoginPageProps {
-    searchParams: Promise<{ error?: string; message?: string; next?: string }>
-}
+import { SubmitButton } from '@/components/Common/SubmitButton'
+import Link from 'next/link'
 
 export default async function LoginPage(props: { searchParams: Promise<{ error?: string; message?: string; next?: string }> }) {
     const searchParams = await props.searchParams
@@ -34,7 +32,6 @@ export default async function LoginPage(props: { searchParams: Promise<{ error?:
                 )}
 
                 <form className="space-y-4" action={login}>
-                    {/* Preserve 'next' param for redirect after auth */}
                     <input type="hidden" name="next" value={next || '/'} />
 
                     <div className="space-y-2">
@@ -50,7 +47,12 @@ export default async function LoginPage(props: { searchParams: Promise<{ error?:
                     </div>
 
                     <div className="space-y-2">
-                        <label htmlFor="password" className="text-sm font-medium text-slate-700">Contraseña</label>
+                        <div className="flex justify-between items-center">
+                            <label htmlFor="password" className="text-sm font-medium text-slate-700">Contraseña</label>
+                            <Link href="/login/forgot-password" className="text-xs text-emerald-600 hover:text-emerald-700 font-medium">
+                                ¿La olvidaste?
+                            </Link>
+                        </div>
                         <input
                             id="password"
                             name="password"
@@ -62,12 +64,12 @@ export default async function LoginPage(props: { searchParams: Promise<{ error?:
                     </div>
 
                     <div className="pt-4 flex flex-col gap-3">
-                        <button className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 rounded-xl transition-all active:scale-[0.98]">
+                        <SubmitButton className="w-full py-3.5 rounded-xl" pendingText="Iniciando sesión...">
                             Iniciar Sesión
-                        </button>
-                        <button formAction={signup} className="w-full bg-white hover:bg-slate-50 text-slate-700 font-bold py-3.5 rounded-xl border border-slate-200 transition-all active:scale-[0.98]">
+                        </SubmitButton>
+                        <SubmitButton formAction={signup} variant="secondary" className="w-full py-3.5 rounded-xl" pendingText="Creando cuenta...">
                             Crear Cuenta
-                        </button>
+                        </SubmitButton>
                     </div>
                 </form>
             </div>

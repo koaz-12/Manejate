@@ -3,6 +3,7 @@
 import { removeMember } from '@/actions/collaboration'
 import { Trash2, Shield, User, LogOut } from 'lucide-react'
 import { useState } from 'react'
+import { ConfirmDialog } from '@/components/Common/ConfirmDialog'
 
 type Member = {
     user_id: string
@@ -18,13 +19,9 @@ export function MemberList({ members, currentUserId, budgetId, currentUserRole }
     const [loading, setLoading] = useState<string | null>(null)
 
     async function handleRemove(userId: string) {
-        // Confirmations moved to button onClick for specific messages
-
         setLoading(userId)
         await removeMember(budgetId, userId)
         setLoading(null)
-        // Router refresh handled by server action revalidate? Client might need router.refresh() if revalidatePath not enough for client cache.
-        // But usually revalidatePath works.
     }
 
     return (
@@ -53,41 +50,39 @@ export function MemberList({ members, currentUserId, budgetId, currentUserRole }
                         </div>
                     </div>
 
-                    {/* Actions: Show Remove if Current User is Admin OR if it's themselves (Leave) */}
-                    {/* Simplified: Show trash if NOT them, assuming Admin view. Logic handled in backend too. */}
-                    {/* Actually, let's allow removing if I am admin, OR removing myself. */}
-
-                    {/* Actions Logic:
-                        1. If it's ME: Show "Leave" button.
-                        2. If it's NOT ME and I am ADMIN: Show "Kick" button.
-                        3. Else: Show nothing.
-                     */}
                     {member.user_id === currentUserId ? (
-                        <button
-                            onClick={() => {
-                                if (confirm('¿Quieres salir de este presupuesto? Perderás acceso a los gastos.')) {
-                                    handleRemove(member.user_id)
-                                }
-                            }}
-                            disabled={loading === member.user_id}
-                            className="p-2 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors disabled:opacity-50"
-                            title="Salir del grupo"
-                        >
-                            <LogOut className="w-4 h-4" />
-                        </button>
+                        <ConfirmDialog
+                            title="¿Salir del presupuesto?"
+                            message="Perderás acceso a todos los gastos y datos de este presupuesto."
+                            confirmLabel="Salir"
+                            variant="warning"
+                            onConfirm={() => handleRemove(member.user_id)}
+                            trigger={
+                                <button
+                                    disabled={loading === member.user_id}
+                                    className="p-2 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors disabled:opacity-50"
+                                    title="Salir del grupo"
+                                >
+                                    <LogOut className="w-4 h-4" />
+                                </button>
+                            }
+                        />
                     ) : currentUserRole === 'admin' ? (
-                        <button
-                            onClick={() => {
-                                if (confirm('¿Eliminar a este usuario del presupuesto?')) {
-                                    handleRemove(member.user_id)
-                                }
-                            }}
-                            disabled={loading === member.user_id}
-                            className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
-                            title="Eliminar miembro"
-                        >
-                            <Trash2 className="w-4 h-4" />
-                        </button>
+                        <ConfirmDialog
+                            title="¿Eliminar miembro?"
+                            message={`${member.profiles?.display_name || 'Este usuario'} será removido del presupuesto.`}
+                            confirmLabel="Eliminar"
+                            onConfirm={() => handleRemove(member.user_id)}
+                            trigger={
+                                <button
+                                    disabled={loading === member.user_id}
+                                    className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+                                    title="Eliminar miembro"
+                                >
+                                    <Trash2 className="w-4 h-4" />
+                                </button>
+                            }
+                        />
                     ) : null}
                 </div>
             ))}

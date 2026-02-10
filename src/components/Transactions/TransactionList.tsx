@@ -2,9 +2,10 @@
 
 import { format, isToday, isYesterday } from 'date-fns'
 import { es } from 'date-fns/locale'
-import { Search, Filter, ArrowUpRight, ArrowDownLeft } from 'lucide-react'
+import { Search, ArrowUpRight, ArrowDownLeft } from 'lucide-react'
 import { useState, useMemo } from 'react'
 import { TransactionActions } from './TransactionActions'
+import { TransactionFilters } from './TransactionFilters'
 
 interface Transaction {
     id: string
@@ -32,22 +33,53 @@ interface Props {
 }
 
 export function TransactionList({ transactions, categories, currency }: Props) {
-    const [search, setSearch] = useState('')
+    const [filters, setFilters] = useState({ search: '', categoryId: '', dateFrom: '', dateTo: '' })
 
     const categoriesMap = useMemo(() =>
         new Map(categories.map(c => [c.id, c])),
         [categories])
 
+    // Build parent->child mapping for category filtering
+    const childCategoryIds = useMemo(() => {
+        const map = new Map<string, string[]>()
+        categories.forEach(c => {
+            if (c.parent_id) {
+                const existing = map.get(c.parent_id) || []
+                existing.push(c.id)
+                map.set(c.parent_id, existing)
+            }
+        })
+        return map
+    }, [categories])
+
     const filteredTransactions = useMemo(() => {
         return transactions.filter(tx => {
             const cat = categoriesMap.get(tx.category_id)
-            const matchSearch =
-                tx.description?.toLowerCase().includes(search.toLowerCase()) ||
-                cat?.name.toLowerCase().includes(search.toLowerCase())
 
-            return matchSearch
+            // Text search
+            if (filters.search) {
+                const q = filters.search.toLowerCase()
+                const matchSearch =
+                    tx.description?.toLowerCase().includes(q) ||
+                    cat?.name.toLowerCase().includes(q)
+                if (!matchSearch) return false
+            }
+
+            // Category filter (includes subcategories of selected parent)
+            if (filters.categoryId) {
+                const childIds = childCategoryIds.get(filters.categoryId) || []
+                if (tx.category_id !== filters.categoryId && !childIds.includes(tx.category_id)) {
+                    return false
+                }
+            }
+
+            // Date range
+            if (filters.dateFrom && tx.date < filters.dateFrom) return false
+            if (filters.dateTo && tx.date > filters.dateTo) return false
+
+            return true
         })
-    }, [transactions, search, categoriesMap])
+    }, [transactions, filters, categoriesMap, childCategoryIds])
 
     const groupedTransactions = useMemo(() => {
         const groups: Record<string, Transaction[]> = {}
@@ -69,19 +101,17 @@ export function TransactionList({ transactions, categories, currency }: Props) {
 
     return (
         <div className="space-y-6">
-            {/* Search Bar */}
+            {/* Filters */}
             <div className="sticky top-0 z-20 bg-slate-50 pt-2 pb-4">
-                <div className="relative">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                    <input
-                        type="text"
-                        placeholder="Buscar movimientos..."
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        className="w-full bg-white border-slate-200 pl-12 pr-4 py-3 rounded-2xl shadow-sm outline-none focus:ring-2 focus:ring-slate-900/10 transition-all font-medium placeholder:text-slate-400 text-slate-800"
-                    />
-                </div>
+                <TransactionFilters categories={categories} onFiltersChange={setFilters} />
             </div>
+
+            {/* Results count */}
+            {(filters.search || filters.categoryId || filters.dateFrom || filters.dateTo) && (
+                <p className="text-xs text-slate-400 font-medium px-1">
+                    {filteredTransactions.length} resultado{filteredTransactions.length !== 1 ? 's' : ''}
+                </p>
+            )}
 
             {/* List */}
             {sortedDates.length > 0 ? (
@@ -130,10 +160,9 @@ export function TransactionList({ transactions, categories, currency }: Props) {
                                                 </div>
                                             </div>
 
-                                            {/* Actions Overlay (only visible on specific interaction, but for now we keep the dot menu) */}
+                                            {/* Actions */}
                                             <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                                 <TransactionActions id={tx.id} />
-                                                {/* Note: TransactionActions might need styling tweaks to fit this new layout */}
                                             </div>
                                         </div>
                                     )
@@ -148,9 +177,10 @@ export function TransactionList({ transactions, categories, currency }: Props) {
                         <Search className="w-8 h-8 opacity-50" />
                     </div>
                     <p className="font-medium">No se encontraron movimientos</p>
-                    <p className="text-sm opacity-70 mt-1">Intenta con otra búsqueda</p>
+                    <p className="text-sm opacity-70 mt-1">Intenta con otra búsqueda o filtro</p>
                 </div>
             )}
         </div>
     )
 }
+

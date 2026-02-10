@@ -3,6 +3,7 @@
 import { updateCategory, createCategory, deleteCategory } from '@/actions/settings'
 import { useState } from 'react'
 import { Pencil, Check, X, Loader2, Plus, Trash2, AlertTriangle } from 'lucide-react'
+import { ConfirmDialog } from '@/components/Common/ConfirmDialog'
 
 // Simple Emoji Picker for demonstration (can be expanded)
 const COMMON_ICONS = ['🍔', '🛒', '⛽', '🏠', '💡', '🎬', '💊', '🚌', '✈️', '🎁', '🎓', '👶', '🐾', '💳', '🏦', '💰', '💸', '💼', '📦', '🔹']
@@ -233,7 +234,6 @@ function CategoryRow({ category, currency, onAddSub, isChild = false }: { catego
     }
 
     async function handleDelete() {
-        if (!confirm('¿Estás seguro de eliminar esta categoría y todo su contenido?')) return
         setLoading(true)
         await deleteCategory(category.id)
         // No need to clear state as component unmounts
@@ -325,14 +325,21 @@ function CategoryRow({ category, currency, onAddSub, isChild = false }: { catego
                 <button onClick={() => setIsEditing(true)} className="p-2 text-slate-300 hover:text-[var(--secondary)] transition-colors" title="Editar">
                     <Pencil className="w-4 h-4" />
                 </button>
-                <button
-                    onClick={handleDelete}
-                    disabled={loading}
-                    className="p-2 text-slate-300 hover:text-red-500 transition-colors"
-                    title="Eliminar"
-                >
-                    {loading ? <Loader2 className="w-4 h-4 animate-spin text-red-500" /> : <Trash2 className="w-4 h-4" />}
-                </button>
+                <ConfirmDialog
+                    title="¿Eliminar categoría?"
+                    message={`"${category.name}" y todo su contenido serán eliminados permanentemente.`}
+                    confirmLabel="Eliminar"
+                    onConfirm={handleDelete}
+                    trigger={
+                        <button
+                            disabled={loading}
+                            className="p-2 text-slate-300 hover:text-red-500 transition-colors"
+                            title="Eliminar"
+                        >
+                            {loading ? <Loader2 className="w-4 h-4 animate-spin text-red-500" /> : <Trash2 className="w-4 h-4" />}
+                        </button>
+                    }
+                />
             </div>
         </div>
     )
