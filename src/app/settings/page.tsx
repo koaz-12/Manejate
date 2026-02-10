@@ -11,6 +11,7 @@ import { PreferencesSection } from '@/components/Settings/PreferencesSection';
 import { ExportDataCard } from '@/components/Settings/ExportDataCard';
 import { DangerZoneCard } from '@/components/Settings/DangerZoneCard';
 import { getActiveBudgetContext } from '@/lib/budget-helpers';
+import { getNotifications } from '@/actions/notifications';
 import { redirect } from 'next/navigation';
 
 export default async function SettingsPage() {
@@ -25,6 +26,7 @@ export default async function SettingsPage() {
         { data: fullMembers },
         { data: invitations },
         { data: recurringExpenses },
+        notifications,
     ] = await Promise.all([
         supabase
             .from('user_settings')
@@ -51,6 +53,7 @@ export default async function SettingsPage() {
             .select('*')
             .eq('budget_id', budget.id)
             .order('day_of_month', { ascending: true }),
+        getNotifications(budget.id),
     ]);
 
     const formattedMembers = fullMembers?.map((m: any) => ({
@@ -64,6 +67,7 @@ export default async function SettingsPage() {
                 budgets={budgets}
                 currentBudgetId={budget.id}
                 userAvatar={profile?.avatar_url}
+                notifications={notifications}
             />
 
             <main className="px-6 mt-6 space-y-8 max-w-2xl mx-auto">

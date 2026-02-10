@@ -8,6 +8,7 @@ import { Wallet, Plus } from 'lucide-react'
 import Link from 'next/link'
 import { getActiveBudgetContext } from '@/lib/budget-helpers'
 import { calculatePeriod } from '@/lib/period'
+import { getNotifications } from '@/actions/notifications'
 
 export default async function BudgetPage({ searchParams }: { searchParams: Promise<{ date?: string }> }) {
     const params = await Promise.resolve(searchParams)
@@ -47,6 +48,7 @@ export default async function BudgetPage({ searchParams }: { searchParams: Promi
         { data: invitations },
         { data: allCategories },
         { data: transactions },
+        notifications,
     ] = await Promise.all([
         supabase
             .from('budget_members')
@@ -68,6 +70,7 @@ export default async function BudgetPage({ searchParams }: { searchParams: Promi
             .eq('budget_id', budget.id)
             .gte('date', startOfPeriod.toISOString())
             .lt('date', endOfPeriod.toISOString()),
+        getNotifications(budget.id),
     ])
 
     const formattedMembers = fullMembers?.map((m: any) => ({
@@ -134,6 +137,7 @@ export default async function BudgetPage({ searchParams }: { searchParams: Promi
                 budgets={budgets}
                 currentBudgetId={budget.id}
                 userAvatar={profile?.avatar_url}
+                notifications={notifications}
             />
 
             <MonthSelector cutoffDay={cutoffDay} />

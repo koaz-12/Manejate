@@ -7,6 +7,7 @@ import { ProfileCard } from '@/components/Settings/ProfileCard';
 import { PreferencesSection } from '@/components/Settings/PreferencesSection';
 import { SecurityCard } from '@/components/Settings/SecurityCard';
 import { NotificationPreferencesCard } from '@/components/Settings/NotificationPreferencesCard';
+import { getNotifications } from '@/actions/notifications';
 
 export default async function ProfilePage() {
     const supabase = await createClient();
@@ -46,12 +47,15 @@ export default async function ProfilePage() {
         .eq('key', 'goals.default_initial_deposit')
         .single()
 
+    const notifications = currentBudgetId ? await getNotifications(currentBudgetId) : []
+
     return (
         <div className="min-h-screen bg-slate-50 pb-24">
             <BudgetHeader
                 budgets={budgets}
                 currentBudgetId={currentBudgetId}
                 userAvatar={profile?.avatar_url}
+                notifications={notifications}
             />
 
             <main className="px-6 mt-6 space-y-6 max-w-2xl mx-auto">

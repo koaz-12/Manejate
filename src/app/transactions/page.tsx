@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { BudgetHeader } from '@/components/Layout/BudgetHeader';
 import { TransactionList } from '@/components/Transactions/TransactionList';
 import { getActiveBudgetContext } from '@/lib/budget-helpers';
+import { getNotifications } from '@/actions/notifications';
 import { redirect } from 'next/navigation';
 
 export default async function TransactionsPage() {
@@ -12,7 +13,7 @@ export default async function TransactionsPage() {
     if (!budget) redirect('/');
 
     // Parallel data fetching
-    const [{ data: transactions }, { data: categories }] = await Promise.all([
+    const [{ data: transactions }, { data: categories }, notifications] = await Promise.all([
         supabase
             .from('transactions')
             .select('*, profiles(display_name, email)')
@@ -22,6 +23,7 @@ export default async function TransactionsPage() {
             .from('categories')
             .select('id, name, icon, parent_id')
             .eq('budget_id', budget.id),
+        getNotifications(budget.id),
     ]);
 
     return (
@@ -30,6 +32,7 @@ export default async function TransactionsPage() {
                 budgets={budgets}
                 currentBudgetId={budget.id}
                 userAvatar={profile?.avatar_url}
+                notifications={notifications}
             />
 
             <main className="px-6 mt-6 space-y-6">

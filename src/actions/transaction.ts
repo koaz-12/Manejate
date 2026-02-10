@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { checkBudgetThresholds } from '@/lib/notifications'
 
 export async function addTransaction(formData: FormData) {
     const supabase = await createClient()
@@ -49,6 +50,8 @@ export async function addTransaction(formData: FormData) {
         return { error: error.message }
     }
 
+    // Check budget thresholds (non-blocking)
+    checkBudgetThresholds(budgetId, categoryId).catch(console.error)
 
     revalidatePath('/')
     revalidatePath('/transactions')

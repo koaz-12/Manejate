@@ -3,6 +3,7 @@
 import { NotificationDropdown } from './NotificationDropdown'
 import { switchBudget } from '@/actions/app'
 import { signOut } from '@/actions/auth'
+import { markAllNotificationsAsRead } from '@/actions/notifications'
 import { Bell, ChevronDown, Plus, User, Check, Wallet, Settings, LogOut } from 'lucide-react'
 import { useState } from 'react'
 import Link from 'next/link'
@@ -13,49 +14,43 @@ interface Budget {
     role?: string
 }
 
+interface Notification {
+    id: string
+    type: string
+    title: string
+    message: string
+    read: boolean
+    created_at: string
+}
+
 interface Props {
     budgets: Budget[]
     currentBudgetId: string
     userAvatar?: string | null
+    notifications?: Notification[]
 }
 
-export function BudgetHeader({ budgets, currentBudgetId, userAvatar }: Props) {
+export function BudgetHeader({ budgets, currentBudgetId, userAvatar, notifications: initialNotifications = [] }: Props) {
     const [isOpen, setIsOpen] = useState(false)
     const [isProfileOpen, setIsProfileOpen] = useState(false)
     const [isNotificationsOpen, setIsNotificationsOpen] = useState(false)
-
-    // Mock Data for Notifications
-    const [notifications, setNotifications] = useState([
-        {
-            id: 1,
-            type: 'success',
-            title: 'Hito Alcanzado',
-            message: 'Completaste tu meta "Vacaciones".',
-            time: '2h',
-            read: false
-        },
-        {
-            id: 2,
-            type: 'info',
-            title: 'Nuevo Presupuesto',
-            message: 'Te uniste a "Casa de Playa".',
-            time: '1d',
-            read: true
-        },
-        {
-            id: 3,
-            type: 'warning',
-            title: 'Límite de Gastos',
-            message: '80% de tu límite en "Restaurantes".',
-            time: '3d',
-            read: true
-        }
-    ])
+    const [notifications, setNotifications] = useState(initialNotifications)
 
     const unreadCount = notifications.filter(n => !n.read).length
 
-    function markAllAsRead() {
+    function formatTime(dateStr: string) {
+        const diff = Date.now() - new Date(dateStr).getTime()
+        const minutes = Math.floor(diff / 60000)
+        if (minutes < 60) return `${minutes}m`
+        const hours = Math.floor(minutes / 60)
+        if (hours < 24) return `${hours}h`
+        const days = Math.floor(hours / 24)
+        return `${days}d`
+    }
+
+    async function markAllAsRead() {
         setNotifications(notifications.map(n => ({ ...n, read: true })))
+        await markAllNotificationsAsRead(currentBudgetId)
     }
 
     const currentBudget = budgets.find(b => b.id === currentBudgetId)
@@ -132,7 +127,11 @@ export function BudgetHeader({ budgets, currentBudgetId, userAvatar }: Props) {
                             <div className="fixed inset-0 z-40" onClick={() => setIsNotificationsOpen(false)}></div>
                             <NotificationDropdown
                                 onClose={() => setIsNotificationsOpen(false)}
-                                notifications={notifications}
+                                notifications={notifications.map(n => ({
+                                    ...n,
+                                    id: typeof n.id === 'string' ? parseInt(n.id.slice(0, 8), 16) : Number(n.id),
+                                    time: formatTime(n.created_at)
+                                }))}
                                 onMarkAllAsRead={markAllAsRead}
                             />
                         </>

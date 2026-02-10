@@ -9,6 +9,7 @@ import { MonthSelector } from '@/components/Dashboard/MonthSelector';
 import { getActiveBudgetContext } from '@/lib/budget-helpers';
 import { calculatePeriod } from '@/lib/period';
 import { getMonthlyTrends } from '@/lib/trends';
+import { getNotifications } from '@/actions/notifications';
 
 export default async function Home({ searchParams }: { searchParams: Promise<{ date?: string }> }) {
   const params = await searchParams;
@@ -34,7 +35,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
   checkAndGenerateRecurring(budget.id).catch(console.error);
 
   // Parallel data fetching — all at once instead of sequentially
-  const [{ data: transactions }, { data: categories }, trendsData] = await Promise.all([
+  const [{ data: transactions }, { data: categories }, trendsData, notifications] = await Promise.all([
     supabase
       .from('transactions')
       .select('*, profiles(display_name, email)')
@@ -47,6 +48,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
       .select('id, name, type, budget_limit, icon')
       .eq('budget_id', budget.id),
     getMonthlyTrends(budget.id, cutoffDay),
+    getNotifications(budget.id),
   ]);
 
   // Calculate Spent & Income
@@ -84,6 +86,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
         budgets={budgets}
         currentBudgetId={budget.id}
         userAvatar={profile?.avatar_url}
+        notifications={notifications}
       />
 
       <MonthSelector cutoffDay={cutoffDay} currentDate={paramDate} />

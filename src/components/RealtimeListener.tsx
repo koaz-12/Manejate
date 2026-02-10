@@ -25,6 +25,7 @@ export function RealtimeListener() {
             .on('postgres_changes', { event: '*', schema: 'public', table: 'savings_goals' }, refreshData)
             .on('postgres_changes', { event: '*', schema: 'public', table: 'categories' }, refreshData)
             .on('postgres_changes', { event: '*', schema: 'public', table: 'budget_members' }, refreshData)
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'notifications' }, refreshData)
             .subscribe()
 
         return () => {

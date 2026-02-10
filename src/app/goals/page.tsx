@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { GoalCard } from '@/components/Goals/GoalCard'
 import { BudgetHeader } from '@/components/Layout/BudgetHeader'
 import { getActiveBudgetContext } from '@/lib/budget-helpers'
+import { getNotifications } from '@/actions/notifications'
 
 export default async function GoalsPage() {
     const { supabase, budgets, budget, profile } = await getActiveBudgetContext()
@@ -20,12 +21,15 @@ export default async function GoalsPage() {
         )
     }
 
-    // Fetch Goals
     const { data: goals } = await supabase
         .from('savings_goals')
         .select('*')
         .eq('budget_id', budget.id)
         .order('created_at', { ascending: false })
+
+    const [notifications] = await Promise.all([
+        getNotifications(budget.id),
+    ])
 
     const totalSaved = goals?.reduce((sum, g) => sum + Number(g.current_amount), 0) || 0
 
@@ -35,6 +39,7 @@ export default async function GoalsPage() {
                 budgets={budgets}
                 currentBudgetId={budget.id}
                 userAvatar={profile?.avatar_url}
+                notifications={notifications}
             />
 
             <main className="px-6 mt-6 space-y-6">
