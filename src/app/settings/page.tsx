@@ -1,6 +1,4 @@
 import { BottomNav } from '@/components/Layout/BottomNav';
-import { createClient } from '@/lib/supabase/server';
-import { redirect } from 'next/navigation';
 import { BudgetSettingsForm } from '@/components/Settings/BudgetSettingsForm';
 import { CategoryList } from '@/components/Settings/CategoryList'
 import { InviteLink } from '@/components/Settings/InviteLink';
@@ -12,78 +10,53 @@ import { ProfileCard } from '@/components/Settings/ProfileCard';
 import { PreferencesSection } from '@/components/Settings/PreferencesSection';
 import { ExportDataCard } from '@/components/Settings/ExportDataCard';
 import { DangerZoneCard } from '@/components/Settings/DangerZoneCard';
+import { getActiveBudgetContext } from '@/lib/budget-helpers';
+import { redirect } from 'next/navigation';
 
 export default async function SettingsPage() {
-    const supabase = await createClient();
-
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) redirect('/login');
-
-    // Fetch All Memberships
-    const { data: memberships } = await supabase
-        .from('budget_members')
-        .select('role, budgets(*)')
-        .eq('user_id', user.id)
-
-    const budgets = memberships?.map((m: any) => m.budgets) || [];
-
-    // Determine Active Budget from Cookie or Default
-    const { cookies } = await import('next/headers')
-    const cookieStore = await cookies()
-    const selectedId = cookieStore.get('selected_budget')?.value
-
-    const activeMembership = memberships?.find((m: any) => m.budgets.id === selectedId) || memberships?.[0]
-    const budget = activeMembership?.budgets as any
-    const role = activeMembership?.role
+    const { supabase, user, budgets, budget, role, profile } = await getActiveBudgetContext();
 
     if (!budget) redirect('/');
 
-    // Fetch User Profile
-    const { data: profile } = await supabase
-        .from('profiles')
-        .select('avatar_url, display_name, email')
-        .eq('id', user.id)
-        .single();
-
-    // Fetch User Settings
-    const { data: settings } = await supabase
-        .from('user_settings')
-        .select('value')
-        .eq('user_id', user.id)
-        .eq('key', 'goals.default_initial_deposit')
-        .single()
-
-    // Fetch Categories
-    const { data: categories } = await supabase
-        .from('categories')
-        .select('*')
-        .eq('budget_id', budget.id)
-        .order('type', { ascending: true });
-
-    // Fetch Full Members List
-    const { data: fullMembers } = await supabase
-        .from('budget_members')
-        .select('user_id, role, profiles(display_name, email, avatar_url)')
-        .eq('budget_id', budget.id)
+    // Parallel data fetching — all independent queries at once
+    const [
+        { data: settings },
+        { data: categories },
+        { data: fullMembers },
+        { data: invitations },
+        { data: recurringExpenses },
+    ] = await Promise.all([
+        supabase
+            .from('user_settings')
+            .select('value')
+            .eq('user_id', user.id)
+            .eq('key', 'goals.default_initial_deposit')
+            .single(),
+        supabase
+            .from('categories')
+            .select('*')
+            .eq('budget_id', budget.id)
+            .order('type', { ascending: true }),
+        supabase
+            .from('budget_members')
+            .select('user_id, role, profiles(display_name, email, avatar_url)')
+            .eq('budget_id', budget.id),
+        supabase
+            .from('invitations')
+            .select('*')
+            .eq('budget_id', budget.id)
+            .gte('expires_at', new Date().toISOString()),
+        supabase
+            .from('recurring_expenses')
+            .select('*')
+            .eq('budget_id', budget.id)
+            .order('day_of_month', { ascending: true }),
+    ]);
 
     const formattedMembers = fullMembers?.map((m: any) => ({
         ...m,
         profiles: Array.isArray(m.profiles) ? m.profiles[0] : m.profiles
     }))
-
-    // Fetch Active Invitations
-    const { data: invitations } = await supabase
-        .from('invitations')
-        .select('*')
-        .eq('budget_id', budget.id)
-        .gte('expires_at', new Date().toISOString())
-
-    // Fetch Recurring Expenses
-    const { data: recurringExpenses } = await supabase
-        .from('recurring_expenses')
-        .select('*')
-        .eq('budget_id', budget.id)
-        .order('day_of_month', { ascending: true })
 
     return (
         <div className="min-h-screen bg-slate-50 pb-24">
@@ -130,7 +103,6 @@ export default async function SettingsPage() {
                 <section className="space-y-4">
                     <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider pl-2">Equipo</h2>
 
-                    {/* Invite Card */}
                     <div className="bg-gradient-to-br from-violet-600 to-indigo-700 rounded-[2rem] p-6 text-white shadow-lg overflow-hidden relative">
                         <div className="relative z-10">
                             <h3 className="text-lg font-bold mb-1">Invitar Colaboradores</h3>

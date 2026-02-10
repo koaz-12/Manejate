@@ -1,51 +1,24 @@
-import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
 import { BottomNav } from '@/components/Layout/BottomNav'
-import { Plus, Target, TrendingUp } from 'lucide-react'
+import { Plus, Target } from 'lucide-react'
 import Link from 'next/link'
 import { GoalCard } from '@/components/Goals/GoalCard'
 import { BudgetHeader } from '@/components/Layout/BudgetHeader'
+import { getActiveBudgetContext } from '@/lib/budget-helpers'
 
 export default async function GoalsPage() {
-    const supabase = await createClient()
+    const { supabase, budgets, budget, profile } = await getActiveBudgetContext()
 
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) redirect('/login')
-
-    // Get ALL User's Budgets
-    const { data: memberships } = await supabase
-        .from('budget_members')
-        .select('budgets(*)')
-        .eq('user_id', user.id);
-
-    const budgets = memberships?.map((m: any) => m.budgets) || [];
-
-    if (budgets.length === 0) return (
-        <div className="min-h-screen flex items-center justify-center p-6 bg-slate-50">
-            <div className="text-center">
-                <p className="text-slate-500 mb-4">No tienes presupuestos activos.</p>
-                <Link href="/" className="text-emerald-600 font-bold hover:underline">Ir al Inicio</Link>
-            </div>
-            <BottomNav />
-        </div>
-    );
-
-    // Determine Current Budget
-    const { cookies } = await import('next/headers');
-    const cookieStore = await cookies();
-    const selectedId = cookieStore.get('selected_budget')?.value;
-
-    let budget = budgets.find((b: any) => b.id === selectedId);
     if (!budget) {
-        budget = budgets[0];
+        return (
+            <div className="min-h-screen flex items-center justify-center p-6 bg-slate-50">
+                <div className="text-center">
+                    <p className="text-slate-500 mb-4">No tienes presupuestos activos.</p>
+                    <Link href="/" className="text-emerald-600 font-bold hover:underline">Ir al Inicio</Link>
+                </div>
+                <BottomNav />
+            </div>
+        )
     }
-
-    // Fetch User Profile for Header
-    const { data: profile } = await supabase
-        .from('profiles')
-        .select('avatar_url')
-        .eq('id', user.id)
-        .single();
 
     // Fetch Goals
     const { data: goals } = await supabase
@@ -76,7 +49,6 @@ export default async function GoalsPage() {
 
                 {/* Total Saved Summary Card */}
                 <div className="bg-gradient-to-br from-indigo-600 to-sky-500 p-8 rounded-[2rem] shadow-xl shadow-indigo-200 text-white relative overflow-hidden group">
-                    {/* Decorative Elements */}
                     <div className="absolute -top-12 -right-12 w-48 h-48 bg-white/20 rounded-full blur-3xl group-hover:scale-110 transition-transform duration-1000"></div>
                     <div className="absolute bottom-0 left-0 w-32 h-32 bg-indigo-800/20 rounded-full blur-2xl"></div>
 
